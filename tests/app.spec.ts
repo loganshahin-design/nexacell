@@ -78,6 +78,36 @@ test("desactivar BTS baixa a cobertura prevista", async ({ page }) => {
   await expect(page.getByRole("button", { name: /Redistribuir/ })).toBeEnabled();
 });
 
+test("modo apresentação: setas mudam de passo e Esc sai", async ({ page }) => {
+  await fresh(page);
+  await page.getByRole("button", { name: "Começar" }).click();
+  await page.getByRole("button", { name: /Apresentar/ }).click();
+  await expect(page.getByRole("toolbar", { name: "Controlo da apresentação" })).toBeVisible();
+  await expect(page.locator(".sidebar")).toBeHidden();
+  await page.keyboard.press("ArrowRight");
+  await expect(page.getByRole("heading", { level: 1, name: "Volume de tráfego" })).toBeVisible();
+  await page.keyboard.press("ArrowLeft");
+  await expect(page.getByRole("heading", { level: 1, name: "Cenário e dados reais" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".sidebar")).toBeVisible();
+});
+
+test("comparar cenários e vistas 3D sem erros", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await fresh(page);
+  await page.getByRole("button", { name: "Começar" }).click();
+  await page.getByRole("button", { name: /Cobertura/ }).first().click();
+  await page.getByRole("radio", { name: "Relevo 3D" }).click();
+  await expect(page.getByRole("region", { name: "Relevo 3D do sinal previsto" })).toBeVisible();
+  await page.getByRole("radio", { name: "Mapa 2D" }).click();
+  await expect(page.getByRole("application", { name: "Mapa de cobertura prevista" })).toBeVisible();
+  await page.getByRole("button", { name: /Resumo/ }).first().click();
+  await page.getByRole("radio", { name: "1800 MHz e 800 MHz" }).click();
+  await expect(page.getByRole("columnheader", { name: "800 MHz · 10 MHz" })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("funciona num ecrã de telemóvel sem deslocamento horizontal", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await fresh(page);

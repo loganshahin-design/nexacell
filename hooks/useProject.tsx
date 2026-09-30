@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { defaults, fields } from "@/data/defaults";
@@ -64,6 +65,10 @@ function useProjectState() {
   const [state, setState] = useState<Stored>(initial);
   const [loaded, setLoaded] = useState(false);
   const [storageError, setStorageError] = useState(false);
+  // Hora da última gravação feita por uma alteração do utilizador.
+  const [savedAt, setSavedAt] = useState(0);
+  const [presenting, setPresenting] = useState(false);
+  const lastData = useRef<Pick<Stored, "params" | "stations"> | null>(null);
 
   useEffect(() => {
     try {
@@ -79,6 +84,12 @@ function useProjectState() {
     document.documentElement.dataset.theme = state.theme;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const changed =
+        lastData.current &&
+        (lastData.current.params !== state.params ||
+          lastData.current.stations !== state.stations);
+      lastData.current = { params: state.params, stations: state.stations };
+      if (changed) setSavedAt(Date.now());
     } catch {
       setStorageError(true);
     }
@@ -107,6 +118,9 @@ function useProjectState() {
     ...state,
     loaded,
     storageError,
+    savedAt,
+    presenting,
+    setPresenting,
     dim,
     stations,
     isAutomatic: state.stations === null,

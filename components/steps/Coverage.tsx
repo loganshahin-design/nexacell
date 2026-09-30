@@ -10,6 +10,28 @@ import Equation, { mathNumber as n } from "@/components/Equation";
 import { ZoneMap } from "./Scenario";
 import type { MapCell } from "@/components/ZoneMap";
 import { fmt } from "@/utils/format";
+import dynamic from "next/dynamic";
+import { Download } from "lucide-react";
+import { downloadCanvas } from "@/utils/exportImage";
+import { coverageImage } from "@/utils/coverageImage";
+import { useDriveTest } from "./FieldTest";
+
+export const Zone3D = dynamic(() => import("@/components/three/Zone3D"), {
+  ssr: false,
+  loading: () => (
+    <div className="stage3d">
+      <div className="stage-fallback">A preparar a vista 3D…</div>
+    </div>
+  ),
+});
+const RealMap3D = dynamic(() => import("@/components/map/RealMap3D"), {
+  ssr: false,
+  loading: () => (
+    <div className="realmap">
+      <div className="stage-fallback">A carregar o mapa…</div>
+    </div>
+  ),
+});
 
 export function useCoverage(resolution = 60) {
   const { params, stations } = useProject();
@@ -23,6 +45,8 @@ export default function Coverage() {
   const { params: p, dim, setStep, stations } = useProject();
   const cov = useCoverage();
   const [view, setView] = useState<"classes" | "design">("classes");
+  const [space, setSpace] = useState<"2d" | "3d" | "real">("2d");
+  const drive = useDriveTest();
   const cells: MapCell[] = useMemo(
     () =>
       cov.cells.map((c) => ({
@@ -33,8 +57,8 @@ export default function Coverage() {
           view === "classes"
             ? classes.find((k) => k.key === c.cls)!.color
             : c.rsrp >= cov.designRsrp
-              ? "#15803d"
-              : "#dc2626",
+              ? "#17803a"
+              : "#cc3a29",
         title: `${fmt(c.rsrp, 1)} dBm · ${c.server ?? "sem BTS"}`,
       })),
     [cov, view],
@@ -47,7 +71,8 @@ export default function Coverage() {
         <div className="stack">
           <Hero
             label="Área coberta (critério de projecto)"
-            value={fmt(cov.designCoverage, 1)}
+            value={cov.designCoverage}
+            digits={1}
             unit="%"
             tone={ok ? "ok" : "bad"}
           >
@@ -88,6 +113,49 @@ export default function Coverage() {
           title="Diagrama de cobertura"
           aside={
             <Segmented
+              label="Tipo de vista"
+              value={space}
+              options={[
+                ["2d", "Mapa 2D"],
+                ["3d", "Relevo 3D"],
+                ["real", "Mapa real 3D"],
+              ]}
+              onChange={(v) => setSpace(v as typeof space)}
+            />
+          }
+        >
+          {space === "3d" && (
+            <>
+              <Zone3D
+                cells={cov.cells}
+                stations={stations}
+                sectors={p.sectors}
+                hBeam={p.hBeam}
+                radiusKm={dim.link.radius}
+                samples={drive.samples}
+                label="Relevo 3D do sinal previsto"
+              />
+              <p className="caption">
+                A altura de cada coluna é o RSRP previsto; a cor é a classe do
+                INCM. Arraste para rodar, use a roda do rato ou dois dedos para
+                aproximar.
+              </p>
+            </>
+          )}
+          {space === "real" && (
+            <>
+              <RealMap3D cells={cov.cells} stations={stations} />
+              <p className="caption">
+                Mapa OpenFreeMap com os edifícios do OpenStreetMap em 3D (cerca de
+                2 900 mapeados na área). Alturas exageradas para se verem: sinal 5 m
+                por dB, BTS com 320 m. Precisa de Internet.
+              </p>
+            </>
+          )}
+          {space === "2d" && (
+          <>
+          <div className="view-switch">
+            <Segmented
               label="Vista do mapa"
               value={view}
               options={[
@@ -96,8 +164,18 @@ export default function Coverage() {
               ]}
               onChange={(v) => setView(v as typeof view)}
             />
-          }
-        >
+            <button
+              className="btn ghost"
+              onClick={() =>
+                downloadCanvas(
+                  coverageImage(cov.cells, stations, "Diagrama de cobertura LTE · Michafutene (N1)"),
+                  "nexacell-cobertura.png",
+                )
+              }
+            >
+              <Download size={16} aria-hidden /> Guardar imagem
+            </button>
+          </div>
           <ZoneMap
             stations={stations}
             sectors={p.sectors}
@@ -116,8 +194,8 @@ export default function Coverage() {
           ) : (
             <Legend
               items={[
-                { color: "#15803d", label: `≥ ${fmt(cov.designRsrp, 1)} dBm (coberto)` },
-                { color: "#dc2626", label: "abaixo (não coberto)" },
+                { color: "#17803a", label: `≥ ${fmt(cov.designRsrp, 1)} dBm (coberto)` },
+                { color: "#cc3a29", label: "abaixo (não coberto)" },
               ]}
             />
           )}
@@ -126,6 +204,8 @@ export default function Coverage() {
             antenas sectoriais. Passe o rato por cima de uma célula para ver o
             valor e a BTS que a serve.
           </p>
+          </>
+          )}
         </Panel>
       </div>
       <Calc>

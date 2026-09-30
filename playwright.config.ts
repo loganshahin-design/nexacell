@@ -3,8 +3,9 @@ export default defineConfig({
   testDir: "./tests",
   use: {
     channel: "chromium",
-    baseURL: "http://localhost:3000",
+    baseURL: process.env.BASE_URL ?? "http://localhost:3000",
     headless: true,
+    reducedMotion: "reduce",
     viewport: { width: 1440, height: 1050 },
   },
   timeout: 60000,

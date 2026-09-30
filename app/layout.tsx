@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from "next";
+// Fontes instaladas no projecto (Fontsource): funcionam sem Internet.
+// Títulos: Archivo expandida (eixo wdth); texto: Source Sans 3; dados: IBM Plex Mono.
+import "@fontsource-variable/archivo/wdth.css";
+import "@fontsource-variable/source-sans-3/index.css";
+import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/ibm-plex-mono/600.css";
 import "leaflet/dist/leaflet.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 
@@ -11,8 +18,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f7f9" },
-    { media: "(prefers-color-scheme: dark)", color: "#0e1116" },
+    { media: "(prefers-color-scheme: light)", color: "#eef2f1" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1418" },
   ],
 };
 

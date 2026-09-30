@@ -34,6 +34,14 @@ export const sources: Record<string, Source> = {
     url: "https://www.openstreetmap.org/#map=14/-25.79/32.585",
     date: "consultado a 30/09/2026",
   },
+  osmBuildings: {
+    id: "osmBuildings",
+    label: "Edifícios mapeados na área da zona",
+    value: "2 942 edifícios no rectângulo 25,772–25,812 °S × 32,568–32,605 °E",
+    source: "OpenStreetMap (Overpass, building=*)",
+    url: "https://www.openstreetmap.org/#map=14/-25.792/32.587",
+    date: "consultado a 30/09/2026",
+  },
   ineDistrict: {
     id: "ineDistrict",
     label: "Área e população do distrito",

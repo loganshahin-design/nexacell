@@ -5,6 +5,7 @@ import { sources } from "@/data/sources";
 import { useProject } from "@/hooks/useProject";
 import { Params } from "@/types";
 import { fmt } from "@/utils/format";
+import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 
 export function Panel({
   title,
@@ -45,19 +46,29 @@ export function OriginBadge({
 }) {
   const s = source ? sources[source] : undefined;
   const label = originText[origin];
-  const title = s ? `${s.source} · ${s.date}` : undefined;
+  const tip = s
+    ? `${s.source} · ${s.date}${origin === "REAL" ? ". Clique para abrir a fonte." : ""}`
+    : origin === "PRESSUPOSTO"
+      ? "Escolha do grupo, justificada na ajuda do campo."
+      : "Resultado das fórmulas.";
   return s && origin === "REAL" ? (
     <a
       className={`badge ${origin.toLowerCase()}`}
       href={s.url}
       target="_blank"
       rel="noreferrer"
-      title={title}
+      data-tip={tip}
+      aria-label={`${label}: ${tip}`}
     >
       {label}
     </a>
   ) : (
-    <span className={`badge ${origin.toLowerCase()}`} title={title}>
+    <span
+      className={`badge ${origin.toLowerCase()}`}
+      data-tip={tip}
+      tabIndex={0}
+      aria-label={`${label}: ${tip}`}
+    >
       {label}
     </span>
   );
@@ -175,12 +186,14 @@ export function Segmented({
 export function Hero({
   label,
   value,
+  digits = 0,
   unit,
   children,
   tone = "accent",
 }: {
   label: string;
-  value: string;
+  value: string | number;
+  digits?: number;
   unit?: string;
   children?: React.ReactNode;
   tone?: "accent" | "ok" | "warn" | "bad";
@@ -189,7 +202,13 @@ export function Hero({
     <div className={`hero ${tone}`}>
       <span className="hero-label">{label}</span>
       <div className="hero-value">
-        <strong>{value}</strong>
+        <strong>
+          {typeof value === "number" ? (
+            <AnimatedNumber value={value} digits={digits} />
+          ) : (
+            value
+          )}
+        </strong>
         {unit && <span>{unit}</span>}
       </div>
       {children && <p className="hero-text">{children}</p>}
@@ -200,11 +219,13 @@ export function Hero({
 export function Stat({
   label,
   value,
+  digits = 0,
   unit,
   note,
 }: {
   label: string;
-  value: string;
+  value: string | number;
+  digits?: number;
   unit?: string;
   note?: string;
 }) {
@@ -212,7 +233,11 @@ export function Stat({
     <div className="stat">
       <span className="stat-label">{label}</span>
       <span className="stat-value">
-        {value}
+        {typeof value === "number" ? (
+          <AnimatedNumber value={value} digits={digits} />
+        ) : (
+          value
+        )}
         {unit && <small> {unit}</small>}
       </span>
       {note && <span className="stat-note">{note}</span>}

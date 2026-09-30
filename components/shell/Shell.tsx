@@ -6,6 +6,7 @@ import {
   Check,
   Menu,
   Moon,
+  Presentation,
   RadioTower,
   Sun,
   X,
@@ -13,6 +14,8 @@ import {
 import { steps } from "@/data/steps";
 import { useProject } from "@/hooks/useProject";
 import { Segmented } from "@/components/ui";
+import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
+import { StepTransition } from "@/components/motion/StepTransition";
 import { fmt } from "@/utils/format";
 
 function Decision() {
@@ -21,7 +24,7 @@ function Decision() {
     <div className="decision" aria-live="polite">
       <span className="decision-label">Decisão actual</span>
       <strong>
-        {dim.required} BTS
+        <AnimatedNumber value={dim.required} /> BTS
       </strong>
       <span>
         capacidade {dim.byCapacity} · cobertura {dim.byCoverage}
@@ -82,8 +85,13 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   );
 }
 
+export function startPresentation(setPresenting: (v: boolean) => void) {
+  setPresenting(true);
+  document.documentElement.requestFullscreen?.().catch(() => {});
+}
+
 export function TopBar({ onMenu }: { onMenu: () => void }) {
-  const { step, mode, setMode, theme, setTheme } = useProject();
+  const { step, mode, setMode, theme, setTheme, setPresenting } = useProject();
   const s = steps[step];
   return (
     <header className="topbar">
@@ -110,6 +118,14 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
           onChange={(v) => setMode(v as typeof mode)}
         />
         <button
+          className="btn ghost present-btn"
+          onClick={() => startPresentation(setPresenting)}
+          title="Modo apresentação: ecrã inteiro, setas do teclado para mudar de passo"
+        >
+          <Presentation size={17} aria-hidden />
+          <span className="hide-small">Apresentar</span>
+        </button>
+        <button
           className="icon-btn"
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
           aria-label={theme === "light" ? "Modo escuro" : "Modo claro"}
@@ -122,15 +138,15 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
   );
 }
 
-export function StepLayout({ children }: { children: React.ReactNode }) {
+// Conteúdo de um passo: ao montar, volta ao topo e põe o foco no título.
+function StepContent({ children }: { children: React.ReactNode }) {
   const { step, setStep } = useProject();
   const s = steps[step];
   const heading = useRef<HTMLHeadingElement>(null);
-  // Ao mudar de passo, volta ao topo e move o foco para o título.
   useEffect(() => {
     window.scrollTo({ top: 0 });
     heading.current?.focus({ preventScroll: true });
-  }, [step]);
+  }, []);
   const prev = steps[step - 1],
     next = steps[step + 1];
   return (
@@ -160,6 +176,15 @@ export function StepLayout({ children }: { children: React.ReactNode }) {
         )}
       </footer>
     </article>
+  );
+}
+
+export function StepLayout({ children }: { children: React.ReactNode }) {
+  const { step } = useProject();
+  return (
+    <StepTransition step={step}>
+      <StepContent>{children}</StepContent>
+    </StepTransition>
   );
 }
 

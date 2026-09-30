@@ -20,6 +20,7 @@ import {
   Segmented,
 } from "@/components/ui";
 import { PathLossChart } from "@/components/Charts";
+import { Waterfall } from "@/components/motion/Waterfall";
 import Equation, { mathNumber as n } from "@/components/Equation";
 import { fmt, signed } from "@/utils/format";
 
@@ -117,13 +118,33 @@ export default function ServiceArea() {
           )}
         </div>
         <div className="stack">
-          <Hero label="Raio de cada célula" value={fmt(l.radius, 2)} unit="km">
+          <Hero label="Raio de cada célula" value={l.radius} digits={2} unit="km">
             A perda máxima admissível é {fmt(l.mapl, 1)} dB (limita o{" "}
             {l.limiting === "DL" ? "downlink" : "uplink"}). Com o modelo Hata é
             atingida a {fmt(l.radius, 2)} km. Em espaço livre seria{" "}
             {fmt(fsplRadius, 1)} km, um valor irrealista.
           </Hero>
           <Panel title="Orçamento de enlace (downlink)">
+            <Waterfall
+              steps={[
+                { label: "PIRE/RE", delta: l.reEirp },
+                { label: "−RSRP mín.", delta: -p.rsrpMin },
+                { label: "Sombra", delta: -l.shadowMargin },
+                ...(p.indoorLoss ? [{ label: "Paredes", delta: -p.indoorLoss }] : []),
+                ...(p.interferenceMargin + p.bodyLoss
+                  ? [{ label: "Interf.+corpo", delta: -(p.interferenceMargin + p.bodyLoss) }]
+                  : []),
+                ...(p.ueGain ? [{ label: "Terminal", delta: p.ueGain }] : []),
+                { label: "MAPL", delta: l.dl, total: true },
+              ]}
+            />
+            <p className="caption">
+              Azul: ganhos. Laterite: margens que se descontam. Preto: a perda
+              máxima que o sinal pode sofrer ({fmt(l.dl, 1)} dB).
+            </p>
+          </Panel>
+          {mode === "avancado" && (
+          <Panel title="Orçamento de enlace: tabela">
             <Rows
               rows={[
                 [`Potência por sector`, `${fmt(p.power)} dBm (${fmt(10 ** ((p.power - 30) / 10))} W)`],
@@ -140,6 +161,7 @@ export default function ServiceArea() {
               ]}
             />
           </Panel>
+          )}
           <Panel title="Quantas BTS para cobrir a zona">
             <Rows
               rows={[

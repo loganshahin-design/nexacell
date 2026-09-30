@@ -6,6 +6,7 @@ import { zone } from "@/data/zone";
 import Report, { useConclusions } from "@/components/Report";
 import { Callout, Hero, Panel, Stat } from "@/components/ui";
 import { DecisionCard } from "./ServiceArea";
+import Compare from "@/components/Compare";
 import { fmt } from "@/utils/format";
 
 export default function Summary() {
@@ -45,7 +46,7 @@ export default function Summary() {
             )}
           </div>
           <div className="stack">
-            <Hero label="Conclusões" value={`${dim.required} BTS`} unit={`em ${dim.traffic.year}`} tone={ok ? "ok" : "warn"} />
+            <Hero label="Conclusões" value={dim.required} unit={`BTS em ${dim.traffic.year}`} tone={ok ? "ok" : "warn"} />
             <Panel>
               <ol className="conclusions">
                 {list.map((c) => (
@@ -55,6 +56,7 @@ export default function Summary() {
             </Panel>
           </div>
         </div>
+        <Compare />
         <Panel title="Relatório e ficheiros">
           <p>
             O relatório abaixo segue a numeração da docente (6 → 6.2.1) e usa

@@ -1,4 +1,5 @@
 "use client";
+import { motion, useReducedMotion } from "motion/react";
 import { useProject } from "@/hooks/useProject";
 import { antennaParameters, horizontalLoss } from "@/calculations/antenna";
 import { Calc, Callout, Fields, Hero, Panel, Rows } from "@/components/ui";
@@ -53,6 +54,8 @@ function VerticalDiagram({
   vBeam: number;
   radius: number;
 }) {
+  const reduce = useReducedMotion();
+  const spring = reduce ? { duration: 0 } : { type: "spring" as const, stiffness: 140, damping: 20 };
   const maxKm = Math.max(radius * 1.6, 1);
   const W = 320,
     H = 150,
@@ -70,9 +73,9 @@ function VerticalDiagram({
     <svg viewBox={`0 0 ${W} ${H}`} className="diagram wide" role="img" aria-label={`Corte vertical: tilt de ${tilt}° e abertura de ${vBeam}°`}>
       <line x1={x0} x2={W - 10} y1={ground} y2={ground} stroke="var(--muted)" />
       <line x1={sx(0)} x2={sx(0)} y1={ground} y2={sy(h)} stroke="var(--text)" strokeWidth={3} />
-      <path d={ray(tilt - vBeam / 2)} stroke="var(--accent)" strokeDasharray="4 3" fill="none" />
-      <path d={ray(tilt)} stroke="var(--accent)" strokeWidth={2.5} fill="none" />
-      <path d={ray(tilt + vBeam / 2)} stroke="var(--accent)" strokeDasharray="4 3" fill="none" />
+      <motion.path initial={false} animate={{ d: ray(tilt - vBeam / 2) }} transition={spring} stroke="var(--accent)" strokeDasharray="4 3" fill="none" />
+      <motion.path initial={false} animate={{ d: ray(tilt) }} transition={spring} stroke="var(--accent)" strokeWidth={2.5} fill="none" />
+      <motion.path initial={false} animate={{ d: ray(tilt + vBeam / 2) }} transition={spring} stroke="var(--accent)" strokeDasharray="4 3" fill="none" />
       <line x1={sx(radius)} x2={sx(radius)} y1={ground - 6} y2={ground + 6} stroke="var(--bad)" strokeWidth={2} />
       <text x={sx(radius)} y={ground + 17} textAnchor="middle" fontSize="10" fill="var(--bad)">R = {fmt(radius, 2)} km</text>
       <text x={sx(0) + 5} y={sy(h) - 4} fontSize="10" fill="var(--text)">{h} m</text>
@@ -123,7 +126,7 @@ export default function Antennas() {
           <Panel title="Parâmetros">
             <Fields names={["gain", "hBeam", "vBeam", "tilt", "height", "power"]} />
           </Panel>
-          <Hero label="Tilt óptimo" value={fmt(a.optimalTilt, 1)} unit="°">
+          <Hero label="Tilt óptimo" value={a.optimalTilt} digits={1} unit="°">
             Aponta o limite superior do feixe (−3 dB) à orla da célula, a{" "}
             {fmt(dim.link.radius, 2)} km. Tilt actual: {fmt(p.tilt, 1)}°.
           </Hero>

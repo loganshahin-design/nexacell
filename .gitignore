@@ -5,3 +5,4 @@ test-results/
 playwright-report/
 *.tsbuildinfo
 .scratch/
+public/maplibre/

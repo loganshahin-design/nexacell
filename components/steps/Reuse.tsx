@@ -5,7 +5,7 @@ import { Calc, Callout, Hero, Panel } from "@/components/ui";
 import Equation, { mathNumber as n } from "@/components/Equation";
 import { fmt } from "@/utils/format";
 
-const palette = ["#2563eb", "#f59e0b", "#10b981", "#ef4444", "#8b5cf6", "#06b6d4", "#ec4899", "#84cc16", "#f97316", "#14b8a6", "#6366f1", "#a3a3a3"];
+const palette = ["#0b5fc4", "#b4441c", "#17803a", "#e0ac0c", "#7c4dcc", "#0e9aa7", "#d0457b", "#6b8e23", "#c2410c", "#0f766e", "#4f46e5", "#8a8f98"];
 
 // Grelha hexagonal com a cor de cada grupo de frequências do cluster N.
 function ClusterDiagram({ n: N }: { n: number }) {
@@ -39,14 +39,20 @@ function ClusterDiagram({ n: N }: { n: number }) {
         const x = size * Math.sqrt(3) * (c.q + c.r / 2),
           y = size * 1.5 * c.r;
         const same = c.key === centerKey;
+        // Distância em anéis ao centro: as células pintam-se de dentro para fora.
+        const ring = (Math.abs(c.q) + Math.abs(c.r) + Math.abs(c.q + c.r)) / 2;
+        const delay = `${ring * 0.07}s`;
         return (
           <g key={`${c.q},${c.r}`}>
             <polygon
               points={hex(x, y)}
-              fill={palette[keys.indexOf(c.key) % palette.length]}
-              fillOpacity={same ? 0.95 : 0.35}
-              stroke={same ? "var(--text)" : "var(--surface)"}
-              strokeWidth={same ? 2.5 : 1}
+              style={{
+                fill: palette[keys.indexOf(c.key) % palette.length],
+                fillOpacity: same ? 0.95 : 0.32,
+                stroke: same && N > 1 ? "var(--text)" : "var(--surface)",
+                strokeWidth: same && N > 1 ? 2.5 : 1,
+                transition: `fill .35s ${delay}, fill-opacity .35s ${delay}, stroke .35s ${delay}`,
+              }}
             />
             <text x={x} y={y + 4} textAnchor="middle" fontSize="10" fill="var(--text)">
               {keys.indexOf(c.key) + 1}
@@ -91,7 +97,7 @@ export default function Reuse() {
           </Panel>
         </div>
         <div className="stack">
-          <Hero label={`Com N = ${p.reuse}`} value={fmt(current.perSector, 1)} unit="Mbit/s por sector">
+          <Hero label={`Com N = ${p.reuse}`} value={current.perSector} digits={1} unit="Mbit/s por sector">
             Cada célula usa {fmt(p.bandwidth / p.reuse, 1)} MHz dos {fmt(p.bandwidth)} MHz.
             Os co-canais ficam a D = {fmt(current.q, 2)} × R ={" "}
             {fmt(current.q * dim.link.radius, 2)} km, com C/I ≈ {fmt(current.ci, 1)} dB.

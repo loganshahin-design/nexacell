@@ -7,10 +7,10 @@ import { linkBudget } from "./network";
 
 // Classes do INCM para LTE (dBm).
 export const classes = [
-  { key: "good", label: "Boa", min: -85, color: "#15803d" },
-  { key: "fair", label: "Aceitável", min: -95, color: "#65c466" },
-  { key: "poor", label: "Má", min: -105, color: "#facc15" },
-  { key: "none", label: "Não existe", min: -Infinity, color: "#dc2626" },
+  { key: "good", label: "Boa", min: -85, color: "#17803a" },
+  { key: "fair", label: "Aceitável", min: -95, color: "#5fb35c" },
+  { key: "poor", label: "Má", min: -105, color: "#e0ac0c" },
+  { key: "none", label: "Não existe", min: -Infinity, color: "#cc3a29" },
 ] as const;
 
 export type ClassKey = (typeof classes)[number]["key"];

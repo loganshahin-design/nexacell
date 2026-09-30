@@ -1,5 +1,7 @@
 "use client";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useReducedMotion } from "motion/react";
+import { Play, Square } from "lucide-react";
 import { useProject } from "@/hooks/useProject";
 import { zone } from "@/data/zone";
 import { incmMarracuene4G, sources } from "@/data/sources";
@@ -16,18 +18,65 @@ export function useDriveTest() {
   return useMemo(() => driveTest(params, stations, zone.route), [params, stations]);
 }
 
+const DRIVE_SECONDS = 8;
+
+// Reprodução do drive test: devolve o km actual (null = parado, mostra tudo).
+function useDrivePlayback(total: number) {
+  const reduce = useReducedMotion();
+  const [km, setKm] = useState<number | null>(null);
+  const frame = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(frame.current), []);
+  function play() {
+    cancelAnimationFrame(frame.current);
+    if (reduce) return setKm(null);
+    const t0 = performance.now();
+    let last = 0;
+    const tick = (now: number) => {
+      const f = Math.min(1, (now - t0) / (DRIVE_SECONDS * 1000));
+      if (now - last > 50 || f === 1) {
+        last = now;
+        setKm(f === 1 ? null : f * total);
+      }
+      if (f < 1) frame.current = requestAnimationFrame(tick);
+    };
+    frame.current = requestAnimationFrame(tick);
+  }
+  function stop() {
+    cancelAnimationFrame(frame.current);
+    setKm(null);
+  }
+  return { km, play, stop, reduce };
+}
+
 export default function FieldTest() {
   const { params: p, stations, mode } = useProject();
   const dt = useDriveTest();
+  const total = dt.samples.length ? dt.samples[dt.samples.length - 1].km : 0;
+  const drive = useDrivePlayback(total);
+  // As amostras no mapa revelam-se aos blocos de 250 m para não redesenhar a cada frame.
+  const shownUpTo = drive.km === null ? Infinity : Math.floor(drive.km / 0.25) * 0.25;
   const samples: MapSample[] = useMemo(
     () =>
-      dt.samples.map((s) => ({
-        p: s.p,
-        color: classes.find((c) => c.key === s.cls)!.color,
-        title: `${fmt(s.km, 2)} km · ${fmt(s.rsrp, 1)} dBm · ${s.server ?? "—"}`,
-      })),
-    [dt],
+      dt.samples
+        .filter((s) => s.km <= shownUpTo)
+        .map((s) => ({
+          p: s.p,
+          color: classes.find((c) => c.key === s.cls)!.color,
+          title: `${fmt(s.km, 2)} km · ${fmt(s.rsrp, 1)} dBm · ${s.server ?? "—"}`,
+        })),
+    [dt, shownUpTo],
   );
+  const current = useMemo(() => {
+    if (drive.km === null || !dt.samples.length) return null;
+    const i = Math.min(dt.samples.length - 2, Math.floor(drive.km / 0.05));
+    const a = dt.samples[i],
+      b = dt.samples[i + 1];
+    const t = Math.min(1, Math.max(0, (drive.km - a.km) / (b.km - a.km || 1)));
+    return {
+      p: [a.p[0] + (b.p[0] - a.p[0]) * t, a.p[1] + (b.p[1] - a.p[1]) * t] as [number, number],
+      rsrp: a.rsrp + (b.rsrp - a.rsrp) * t,
+    };
+  }, [drive.km, dt]);
   const ok = dt.meets >= p.coverageTarget;
   const every500 = dt.samples.filter((s) => Math.abs(s.km / 0.5 - Math.round(s.km / 0.5)) < 1e-6);
   return (
@@ -41,7 +90,8 @@ export default function FieldTest() {
         <div className="stack">
           <Hero
             label="Amostras com RSRP ≥ −105 dBm (previsto)"
-            value={fmt(dt.meets, 1)}
+            value={dt.meets}
+            digits={1}
             unit="%"
             tone={ok ? "ok" : "bad"}
           >
@@ -81,17 +131,36 @@ export default function FieldTest() {
           </Panel>
         </div>
         <div className="stack">
-          <Panel title="Rota do teste (N1)">
+          <Panel
+            title="Rota do teste (N1)"
+            aside={
+              drive.km === null ? (
+                <button className="btn primary" onClick={drive.play} disabled={!!drive.reduce}>
+                  <Play size={16} aria-hidden /> Percorrer a N1
+                </button>
+              ) : (
+                <button className="btn" onClick={drive.stop}>
+                  <Square size={14} aria-hidden /> Parar
+                </button>
+              )
+            }
+          >
             <ZoneMap
               stations={stations}
               sectors={p.sectors}
               samples={samples}
+              car={current?.p ?? null}
               tall
               label="Rota do drive test previsto na N1"
             />
+            <p className="caption" aria-live="off">
+              {current && drive.km !== null
+                ? `${fmt(drive.km, 2)} km · RSRP previsto ${fmt(current.rsrp, 1)} dBm`
+                : "Carregue em “Percorrer a N1” para ver o carro de medição a percorrer a rota."}
+            </p>
           </Panel>
           <Panel title="RSRP ao longo da rota">
-            <DriveChart samples={dt.samples} />
+            <DriveChart samples={dt.samples} upTo={drive.km ?? undefined} />
             <p className="caption">
               Do limite com Maputo (0 km) até ao nordeste da zona. Faixas de cor:
               classes do INCM. Linha vermelha: −105 dBm.

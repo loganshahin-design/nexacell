@@ -110,16 +110,21 @@ export function PathLossChart({
 
 export function DriveChart({
   samples,
+  upTo,
 }: {
   samples: { km: number; rsrp: number; server: string | null }[];
+  upTo?: number;
 }) {
-  const data = samples.map((s) => ({
+  const all = samples.map((s) => ({
     km: +s.km.toFixed(2),
     rsrp: +s.rsrp.toFixed(1),
     server: s.server,
   }));
-  const lo = Math.min(-110, Math.floor(Math.min(...data.map((d) => d.rsrp)) / 5) * 5);
-  const hi = Math.max(-70, Math.ceil(Math.max(...data.map((d) => d.rsrp)) / 5) * 5);
+  const maxKm = all.length ? all[all.length - 1].km : 1;
+  const data = upTo === undefined ? all : all.filter((d) => d.km <= upTo + 1e-9);
+  const scale = all.length ? all : [{ rsrp: -90 }];
+  const lo = Math.min(-110, Math.floor(Math.min(...scale.map((d) => d.rsrp)) / 10) * 10);
+  const hi = Math.max(-70, Math.ceil(Math.max(...scale.map((d) => d.rsrp)) / 10) * 10);
   return (
     <div className="chart" role="img" aria-label="RSRP previsto ao longo da N1">
       <ResponsiveContainer width="100%" height="100%">
@@ -135,7 +140,7 @@ export function DriveChart({
             />
           ))}
           <CartesianGrid stroke="var(--line)" />
-          <XAxis dataKey="km" type="number" domain={[0, "dataMax"]} {...axis} unit=" km" />
+          <XAxis dataKey="km" type="number" domain={[0, maxKm]} {...axis} unit=" km" />
           <YAxis
             domain={[lo, hi]}
             ticks={Array.from({ length: Math.floor((hi - lo) / 10) + 1 }, (_, i) => lo + i * 10)}
@@ -152,7 +157,15 @@ export function DriveChart({
             ]}
           />
           <ReferenceLine y={-105} stroke="var(--bad)" strokeDasharray="5 4" />
-          <Line type="monotone" dataKey="rsrp" name="RSRP previsto" stroke="var(--text)" strokeWidth={2} dot={false} />
+          <Line
+            type="monotone"
+            dataKey="rsrp"
+            name="RSRP previsto"
+            stroke="var(--text)"
+            strokeWidth={2}
+            dot={false}
+            isAnimationActive={upTo === undefined}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>

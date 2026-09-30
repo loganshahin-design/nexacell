@@ -4,6 +4,7 @@ import { useProject } from "@/hooks/useProject";
 import { projection } from "@/calculations/network";
 import { Calc, Fields, Hero, Panel, Rows } from "@/components/ui";
 import { ProjectionChart } from "@/components/Charts";
+import { Funnel } from "@/components/motion/Funnel";
 import Equation, { mathNumber as n } from "@/components/Equation";
 import { fmt } from "@/utils/format";
 
@@ -49,7 +50,7 @@ export default function Traffic() {
         <div className="stack">
           <Hero
             label={`Procura na hora de pico em ${t.year}`}
-            value={fmt(t.demand)}
+            value={t.demand}
             unit="Mbit/s"
           >
             Dados {fmt(t.dataMbps)} Mbit/s + voz {fmt(t.voiceMbps, 1)} Mbit/s.
@@ -57,12 +58,16 @@ export default function Traffic() {
             por {fmt(growth, 1)} em {p.horizon} anos.
           </Hero>
           <Panel title={`Dos habitantes aos utilizadores 4G (${t.year})`}>
+            <Funnel
+              stages={[
+                { label: "População", note: `${t.year}`, value: t.population },
+                { label: "Subscritores", note: `× ${fmt(p.penetration)} %`, value: t.subscribers },
+                { label: "Do operador", note: `× ${fmt(p.marketShare)} %`, value: t.operatorUsers },
+                { label: "Com 4G", note: `× ${fmt(p.lteShare)} %`, value: t.lteUsers },
+              ]}
+            />
             <Rows
               rows={[
-                ["População da zona", `${fmt(t.population)} hab.`],
-                [`× penetração ${fmt(p.penetration)} %`, `${fmt(t.subscribers)} subscritores`],
-                [`× quota do operador ${fmt(p.marketShare)} %`, `${fmt(t.operatorUsers)} clientes`],
-                [`× com 4G ${fmt(p.lteShare)} %`, `${fmt(t.lteUsers)} utilizadores LTE`, "total"],
                 [
                   "Consumo por utilizador",
                   `${fmt(t.monthlyGB, 1)} GB/mês → ${fmt(t.perUserMbps * 1000, 1)} kbit/s na hora de pico`,
@@ -76,7 +81,7 @@ export default function Traffic() {
           </Panel>
           <Hero
             label="BTS necessárias pela capacidade"
-            value={String(dim.byCapacity)}
+            value={dim.byCapacity}
             tone="warn"
           >
             Cada BTS oferece {fmt(c.perSite)} Mbit/s ({p.sectors} sectores ×{" "}

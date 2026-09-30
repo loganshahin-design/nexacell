@@ -16,6 +16,18 @@ npm run typecheck
 
 No passo **Resumo**, "Imprimir / guardar PDF" gera o relatório A4 com a numeração da docente.
 
+O `npm install` copia automaticamente o *worker* do MapLibre para `public/maplibre/` (script `postinstall`). As fontes (Archivo, Source Sans 3, IBM Plex Mono) vêm em pacotes npm e funcionam sem Internet.
+
+### Para a apresentação
+
+- **Capa com voo de abertura:** a câmara desce sobre Michafutene e as torres acendem uma a uma ("Repetir voo" para mostrar de novo).
+- **Apresentar** (na capa ou na barra de cima): ecrã inteiro, um passo de cada vez; **→ / ←** mudam de passo, **Esc** sai.
+- **6.1.5 Cobertura:** três vistas — *Mapa 2D*, *Relevo 3D* (a altura das colunas é o sinal) e *Mapa real 3D* (edifícios do OpenStreetMap; precisa de Internet). "Guardar imagem" cria um PNG para o relatório ou os diapositivos.
+- **6.1.6 Teste de campo:** "Percorrer a N1" anima o carro de medição e o gráfico ao mesmo tempo.
+- **Resumo → Comparar cenários:** hoje contra 2030, 1800 contra 800 MHz, exterior contra dentro de casa.
+
+Todas as animações respeitam a opção "reduzir movimento" do sistema operativo.
+
 ---
 
 ## Guia do grupo
@@ -70,6 +82,8 @@ Marracuene **já tem 4G** desde 2019, e o INCM mediu em 2023 que as estradas pri
 - `calculations/` — funções puras e testadas: `network.ts` (tráfego, Erlang B, capacidade, orçamento de enlace, dimensionamento), `propagation.ts` (Okumura/COST-231 Hata, FSPL, RSRP por RE), `antenna.ts` (diagrama 3GPP, tilt, PIRE), `coverage.ts` (mapa RSRP e drive test), `reuse.ts`, `placement.ts`, `geo.ts`.
 - `data/` — `zone.ts` (polígono e rota reais do OSM), `sources.ts` (registo de fontes), `defaults.ts` (valores de origem e descrição de cada parâmetro), `steps.ts`.
 - `components/steps/` — um ficheiro por passo; `components/shell/` — menu, barra superior e navegação; `components/Report.tsx` — relatório A4.
+- `components/motion/` — animações (Motion): número que conta, transição entre passos, funil, cascata do enlace.
+- `components/three/Zone3D.tsx` — cena 3D (React Three Fiber); `components/map/RealMap3D.tsx` — mapa real 3D (MapLibre + OpenFreeMap); `components/Compare.tsx` — comparador de cenários.
 - `hooks/useProject.tsx` — estado único, guardado no navegador (`localStorage`, chave `nexacell-v2`).
 
 Referências técnicas: COST 231 Final Report (1999); Hata (1980); 3GPP TR 36.814 e TS 36.211; Holma & Toskala, *LTE for UMTS* (2011); ITU-R P.525.

@@ -31,6 +31,10 @@ type Props = {
   onAdd?: (lat: number, lng: number) => void;
   tall?: boolean;
   label?: string;
+  // Raio (km) das ondas animadas à volta de cada BTS.
+  pulseKm?: number;
+  // Posição do carro de medição (drive test animado).
+  car?: LatLng | null;
 };
 
 export default function ZoneMap(props: Props) {
@@ -174,7 +178,7 @@ export default function ZoneMap(props: Props) {
         }
       const icon = Leaf.divIcon({
         className: "",
-        html: `<div class="bts-pin${off ? " off" : ""}${props.selected === b.id ? " selected" : ""}"><span></span><b>${b.id.replace("BTS-", "")}</b></div>`,
+        html: `<div class="bts-pin${off ? " off" : ""}${props.selected === b.id ? " selected" : ""}${props.pulseKm && !off ? " pulse" : ""}"><span></span><b>${b.id.replace("BTS-", "")}</b></div>`,
         iconSize: [30, 30],
         iconAnchor: [15, 15],
       });
@@ -203,7 +207,46 @@ export default function ZoneMap(props: Props) {
     props.showLandmark,
     props.editable,
     props.cells,
+    props.pulseKm,
   ]);
+
+  // Tamanho das ondas: o raio calculado convertido em píxeis ao zoom actual.
+  useEffect(() => {
+    const m = map.current;
+    if (!ready || !m || !props.pulseKm || !element.current) return;
+    const km = props.pulseKm;
+    const update = () => {
+      const c = m.getCenter();
+      const a = m.latLngToContainerPoint(c);
+      const b = m.latLngToContainerPoint(offset([c.lat, c.lng], 0, km));
+      element.current?.style.setProperty("--ring", `${Math.abs(b.x - a.x)}px`);
+    };
+    update();
+    m.on("zoomend", update);
+    return () => {
+      m.off("zoomend", update);
+    };
+  }, [ready, props.pulseKm]);
+
+  // Carro do drive test: um marcador só, movido sem redesenhar o resto.
+  const carMarker = useRef<L.Marker | null>(null);
+  useEffect(() => {
+    const Leaf = lib.current,
+      m = map.current;
+    if (!ready || !Leaf || !m) return;
+    if (!props.car) {
+      carMarker.current?.remove();
+      carMarker.current = null;
+      return;
+    }
+    if (!carMarker.current)
+      carMarker.current = Leaf.marker(props.car, {
+        icon: Leaf.divIcon({ className: "", html: '<div class="car-pin"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }),
+        interactive: false,
+        zIndexOffset: 1000,
+      }).addTo(m);
+    else carMarker.current.setLatLng(props.car);
+  }, [ready, props.car]);
 
   return (
     <div className={`map ${props.tall ? "tall" : ""}`}>

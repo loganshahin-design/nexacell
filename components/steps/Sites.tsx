@@ -86,11 +86,12 @@ export default function Sites() {
         <div className="stack">
           <Panel title="Estado">
             <div className="stats">
-              <Stat label="BTS dimensionadas" value={String(dim.required)} />
+              <Stat label="BTS dimensionadas" value={dim.required} />
               <Stat label="BTS colocadas" value={`${active}`} unit={`de ${stations.length}`} />
               <Stat
                 label="Cobertura prevista"
-                value={fmt(preview.designCoverage, 1)}
+                value={preview.designCoverage}
+                digits={1}
                 unit="%"
                 note={`meta ${fmt(p.coverageTarget)} % · detalhe em 6.1.5`}
               />
@@ -153,6 +154,7 @@ export default function Sites() {
               sectors={p.sectors}
               sectorLength={dim.link.radius * 0.45}
               circleKm={dim.link.radius}
+              pulseKm={dim.link.radius}
               editable
               selected={selected}
               onSelect={setSelected}
