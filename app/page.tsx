@@ -1,9 +1,5 @@
-import Workspace from "@/components/Workspace";
-import Access from "@/components/auth/Access";
+import App from "@/components/App";
+
 export default function Page() {
-  return (
-    <Access>
-      <Workspace />
-    </Access>
-  );
+  return <App />;
 }

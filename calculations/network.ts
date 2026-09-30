@@ -1,82 +1,176 @@
-import { Params, BTS } from "@/types";
-import { center } from "@/data/defaults";
-export const fspl = (d: number, f: number) =>
-  32.44 + 20 * Math.log10(d) + 20 * Math.log10(f);
-export const wavelength = (f: number) => 299792458 / (f * 1e6);
-export const erlang = (n: number, c: number, t: number) => (n * c * t) / 3600;
-export const hexArea = (r: number) => ((3 * Math.sqrt(3)) / 2) * r * r;
-export function distance(a: number, b: number, c: number, d: number) {
-  const rad = Math.PI / 180;
-  const h =
-    Math.sin(((c - a) * rad) / 2) ** 2 +
-    Math.cos(a * rad) * Math.cos(c * rad) * Math.sin(((d - b) * rad) / 2) ** 2;
-  return 6371 * 2 * Math.asin(Math.sqrt(h));
+import { Params } from "@/types";
+import {
+  hata,
+  hataIntercept,
+  hataRadius,
+  hataSlope,
+  environmentCorrection,
+  normalInverse,
+  powerPerRe,
+  resourceBlocks,
+  fspl,
+} from "./propagation";
+
+export const erlang = (users: number, callsPerHour: number, seconds: number) =>
+  (users * callsPerHour * seconds) / 3600;
+
+// Probabilidade de bloqueio de Erlang B (forma recursiva estável).
+export function erlangB(traffic: number, channels: number) {
+  let b = 1;
+  for (let n = 1; n <= channels; n++) b = (traffic * b) / (n + traffic * b);
+  return b;
 }
-export function bounds(area: number): [[number, number], [number, number]] {
-  const side = Math.sqrt(area);
-  return [
-    [
-      center[0] - side / 222.64,
-      center[1] - side / (222.64 * Math.cos((center[0] * Math.PI) / 180)),
-    ],
-    [
-      center[0] + side / 222.64,
-      center[1] + side / (222.64 * Math.cos((center[0] * Math.PI) / 180)),
-    ],
-  ];
+
+// Menor número de canais que garante o grau de serviço.
+export function channelsFor(traffic: number, gos: number) {
+  if (traffic <= 0) return 0;
+  let n = 1;
+  while (erlangB(traffic, n) > gos && n < 10000) n++;
+  return n;
 }
-export function calculate(p: Params, stations: BTS[]) {
-  const users = (p.population * p.penetration) / 100;
-  const active = (users * p.active) / 100;
-  const traffic = erlang(users, p.calls, p.duration);
-  const loss = fspl(p.distance, p.frequency);
-  const received = p.power + p.gain + p.receiveGain - loss - p.cable - p.other;
-  const margin = received - p.sensitivity;
-  const useful = hexArea(p.radius) * (1 - p.overlap / 100);
-  const capacityPerSite = (p.bandwidth * p.efficiency * 3) / p.reuse;
-  const demand = active * p.demand;
-  const required = Math.max(
-    Math.ceil(p.area / useful),
-    Math.ceil(demand / capacityPerSite),
-  );
-  const enabled = stations.filter((b) => b.enabled);
-  const bb = bounds(p.area);
-  let covered = 0,
-    overlapping = 0;
-  const total = 3600;
-  for (let x = 0; x < 60; x++)
-    for (let y = 0; y < 60; y++) {
-      const lat = bb[0][0] + ((x + 0.5) / 60) * (bb[1][0] - bb[0][0]);
-      const lng = bb[0][1] + ((y + 0.5) / 60) * (bb[1][1] - bb[0][1]);
-      const count = enabled.filter(
-        (b) => distance(lat, lng, b.lat, b.lng) <= b.radius,
-      ).length;
-      if (count) covered++;
-      if (count > 1) overlapping++;
-    }
-  const coverage = (covered / total) * 100;
-  const capacity = enabled.reduce(
-    (sum, b) => sum + (p.bandwidth * p.efficiency * b.sectors) / p.reuse,
-    0,
+
+// Área servida por um site com R de raio: 2,6·R² (omni), 1,3·R² (2 sectores),
+// 1,95·R² (3 sectores) – Holma & Toskala, cap. 9.
+export function siteAreaFactor(sectors: number) {
+  if (sectors === 2) return 1.3;
+  if (sectors === 3) return 1.95;
+  return 2.6;
+}
+// Distância entre sites de uma rede regular com o factor anterior.
+export const siteSpacing = (radius: number, sectors: number) =>
+  sectors === 3 ? 1.5 * radius : Math.sqrt(3) * radius;
+
+export function traffic(p: Params, years = p.horizon) {
+  const population = p.population * (1 + p.growth / 100) ** years;
+  const subscribers = (population * p.penetration) / 100;
+  const operatorUsers = (subscribers * p.marketShare) / 100;
+  const lteUsers = (operatorUsers * p.lteShare) / 100;
+  const monthlyGB = p.monthlyGB * (1 + p.usageGrowth / 100) ** years;
+  // GB/mês → Mbit por dia → Mbit na hora de pico → Mbit/s.
+  const perUserMbps =
+    ((monthlyGB * 8000) / 30) * (p.busyHourShare / 100) / 3600;
+  const dataMbps = lteUsers * perUserMbps;
+  const voiceErlangs = lteUsers * p.voiceErlang;
+  const voiceChannels = channelsFor(voiceErlangs, p.gos / 100);
+  const voiceMbps = (voiceChannels * p.volteRate) / 1000;
+  return {
+    year: p.baseYear + years,
+    population,
+    subscribers,
+    operatorUsers,
+    lteUsers,
+    monthlyGB,
+    perUserMbps,
+    dataMbps,
+    voiceErlangs,
+    voiceChannels,
+    voiceMbps,
+    demand: dataMbps + voiceMbps,
+  };
+}
+
+export function capacity(p: Params) {
+  const perSector = (p.bandwidth * p.efficiency) / p.reuse;
+  const perSite = perSector * p.sectors;
+  const usable = (perSite * p.maxLoad) / 100;
+  return { perSector, perSite, usable };
+}
+
+export function linkBudget(p: Params) {
+  const nRb = resourceBlocks(p.bandwidth);
+  const rePower = powerPerRe(p.power, nRb);
+  const reEirp = rePower + p.gain - p.cable;
+  const shadowMargin = p.shadowStd * normalInverse(p.edgeProbability / 100);
+  const margins =
+    shadowMargin + p.indoorLoss + p.interferenceMargin + p.bodyLoss;
+  const dl = reEirp + p.ueGain - p.rsrpMin - margins;
+  const noise = -174 + 10 * Math.log10(p.ulRb * 180e3) + p.noiseFigure;
+  const sensitivity = noise + p.ulSinr;
+  const ulEirp = p.uePower + p.ueGain - p.bodyLoss;
+  const ul =
+    ulEirp +
+    p.gain -
+    p.cable -
+    sensitivity -
+    (shadowMargin + p.indoorLoss + p.interferenceMargin);
+  const mapl = Math.min(dl, ul);
+  const radius = hataRadius(
+    mapl,
+    p.frequency,
+    p.height,
+    p.mobileHeight,
+    p.environment,
   );
   return {
-    area: p.area,
-    users,
-    active,
-    traffic,
-    loss,
-    received,
-    margin,
-    useful,
-    required,
-    coverage,
-    overlap: (overlapping / total) * 100,
-    servedArea: (p.area * coverage) / 100,
-    coveredUsers: (users * coverage) / 100,
-    capacity,
-    demand,
-    load: capacity ? (demand / capacity) * 100 : 0,
-    lambda: wavelength(p.frequency),
-    reuseDistance: p.radius * Math.sqrt(3 * p.reuse),
+    nRb,
+    rePower,
+    reEirp,
+    shadowMargin,
+    margins,
+    dl,
+    noise,
+    sensitivity,
+    ulEirp,
+    ul,
+    mapl,
+    limiting: dl <= ul ? ("DL" as const) : ("UL" as const),
+    intercept:
+      hataIntercept(p.frequency, p.height, p.mobileHeight) +
+      environmentCorrection(p.frequency, p.environment),
+    slope: hataSlope(p.height),
+    radius,
+    // RSRP de projecto: o valor mediano no exterior que garante o limiar
+    // depois de descontadas as margens.
+    designRsrp: p.rsrpMin + margins,
+    fsplAtRadius: fspl(radius, p.frequency),
+    hataAtRadius: hata(p.frequency, p.height, p.mobileHeight, radius, p.environment),
   };
+}
+
+export function dimension(p: Params, zoneArea: number) {
+  const t = traffic(p);
+  const now = traffic(p, 0);
+  const c = capacity(p);
+  const l = linkBudget(p);
+  const siteArea = siteAreaFactor(p.sectors) * l.radius ** 2;
+  const byCoverage = Math.ceil(zoneArea / siteArea);
+  const byCapacity = Math.max(1, Math.ceil(t.demand / c.usable));
+  const nowByCapacity = Math.max(1, Math.ceil(now.demand / c.usable));
+  const required = Math.max(byCoverage, byCapacity);
+  return {
+    traffic: t,
+    now,
+    capacity: c,
+    link: l,
+    zoneArea,
+    siteArea,
+    spacing: siteSpacing(l.radius, p.sectors),
+    byCoverage,
+    byCapacity,
+    nowByCapacity,
+    required,
+    limiting:
+      byCapacity > byCoverage
+        ? ("capacidade" as const)
+        : byCoverage > byCapacity
+          ? ("cobertura" as const)
+          : ("ambos" as const),
+    load: (t.demand / (required * c.perSite)) * 100,
+  };
+}
+
+export type Dimension = ReturnType<typeof dimension>;
+
+// Projecção ano a ano para o gráfico do passo 6.1.1.
+export function projection(p: Params) {
+  const c = capacity(p);
+  return Array.from({ length: p.horizon + 1 }, (_, i) => {
+    const t = traffic(p, i);
+    return {
+      year: t.year,
+      demand: Math.round(t.demand),
+      users: Math.round(t.lteUsers),
+      sites: Math.max(1, Math.ceil(t.demand / c.usable)),
+    };
+  });
 }
