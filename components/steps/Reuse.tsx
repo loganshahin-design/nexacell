@@ -135,7 +135,7 @@ export default function Reuse() {
             LTE aceita um C/I baixo porque adapta a modulação ao sinal (de QPSK a
             64-QAM), usa 3 sectores e coordena a interferência entre células
             (ICIC). A margem de interferência de {fmt(p.interferenceMargin)} dB no
-            passo 6.1.2 cobre esse custo.
+            dimensionamento cobre esse custo.
           </Callout>
         </div>
       </div>

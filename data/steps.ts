@@ -1,58 +1,63 @@
-// Os passos seguem a estrutura pedida pela docente (pontos 6.1.1 a 6.2.1).
+// Índices estáveis para preservar os projectos guardados.
 export const steps = [
-  { code: "", title: "Capa", short: "Capa", lead: "" },
   {
-    code: "6",
-    title: "Cenário e dados reais",
-    short: "Cenário",
-    lead: "Onde vamos dimensionar a rede, porquê esta zona e que dados reais temos.",
+    "title": "Visão geral",
+    "short": "Visão geral",
+    "group": "Projecto",
+    "lead": "O estado da rede, os principais resultados e por onde começar."
   },
   {
-    code: "6.1.1",
-    title: "Volume de tráfego",
-    short: "Tráfego",
-    lead: "Quanto tráfego a rede tem de transportar na hora de pico, hoje e no ano de projecto?",
+    "title": "Zona e dados",
+    "short": "Zona e dados",
+    "group": "Projecto",
+    "lead": "Conheça a zona de estudo e as fontes que sustentam o planeamento."
   },
   {
-    code: "6.1.2",
-    title: "Área de serviço",
-    short: "Área de serviço",
-    lead: "Até onde chega cada BTS, e quantas são precisas para cobrir toda a zona?",
+    "title": "Procura e tráfego",
+    "short": "Tráfego",
+    "group": "Planeamento",
+    "lead": "Defina a procura esperada e veja a capacidade necessária na hora de maior utilização."
   },
   {
-    code: "6.1.3",
-    title: "Padrão de reuso",
-    short: "Reuso",
-    lead: "Como se reutilizam as frequências entre células, e o que isso custa em capacidade?",
+    "title": "Dimensionamento da rede",
+    "short": "Dimensionamento",
+    "group": "Planeamento",
+    "lead": "Ajuste os parâmetros de rádio e descubra o alcance e o número de estações necessárias."
   },
   {
-    code: "6.1.4",
-    title: "Localização das BTS",
-    short: "Localização",
-    lead: "Onde ficam as estações base dentro da zona?",
+    "title": "Reutilização de frequências",
+    "short": "Frequências",
+    "group": "Planeamento",
+    "lead": "Compare como a partilha de frequências afecta a interferência e a capacidade."
   },
   {
-    code: "6.1.5",
-    title: "Diagrama de cobertura",
-    short: "Cobertura",
-    lead: "Que sinal chega a cada ponto da zona, e cumprimos a meta do INCM?",
+    "title": "Localização das estações",
+    "short": "Estações",
+    "group": "Planeamento",
+    "lead": "Posicione as estações no mapa e ajuste a rede à zona que pretende servir."
   },
   {
-    code: "6.1.6",
-    title: "Teste de campo",
-    short: "Teste de campo",
-    lead: "O que mediria um carro a percorrer a N1, comparado com as medições reais do INCM?",
+    "title": "Cobertura da rede",
+    "short": "Cobertura",
+    "group": "Análise",
+    "lead": "Explore o sinal previsto e identifique as zonas que precisam de melhorias."
   },
   {
-    code: "6.2",
-    title: "Antenas para sistemas sem fio",
-    short: "Antenas",
-    lead: "Que antenas usar, porquê, e como calcular os seus parâmetros.",
+    "title": "Simulação de percurso",
+    "short": "Percurso",
+    "group": "Análise",
+    "lead": "Veja o sinal previsto ao longo da N1. Esta simulação não substitui medições no terreno."
   },
   {
-    code: "",
-    title: "Resumo e relatório",
-    short: "Resumo",
-    lead: "A decisão final, as conclusões e o relatório para imprimir.",
+    "title": "Configuração das antenas",
+    "short": "Antenas",
+    "group": "Análise",
+    "lead": "Explore os tipos de antena e ajuste a orientação, o ganho e a inclinação."
   },
+  {
+    "title": "Resumo e relatórios",
+    "short": "Relatórios",
+    "group": "Resultados",
+    "lead": "Compare cenários, reveja as conclusões e exporte os resultados do projecto."
+  }
 ];

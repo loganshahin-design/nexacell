@@ -90,7 +90,7 @@ export default function Antennas() {
   const optimal = Math.round(a.optimalTilt * 2) / 2;
   return (
     <>
-      <Panel title="6.2.1 Vantagens e aplicações das antenas">
+      <Panel title="Vantagens e aplicações das antenas">
         <div className="table-wrap">
           <table className="data">
             <thead>
@@ -115,12 +115,12 @@ export default function Antennas() {
         </div>
         <Callout tone="info" title="A nossa escolha: painel sectorial MIMO 2×2 de 65°">
           Três painéis por BTS, a 120° uns dos outros. O ganho de {fmt(p.gain)} dBi
-          aumenta o raio (6.1.2), os três sectores triplicam a capacidade (6.1.1) e
-          o tilt eléctrico limita a interferência entre células vizinhas (6.1.3).
+          aumenta o raio (dimensionamento), os três sectores triplicam a capacidade (tráfego) e
+          o tilt eléctrico limita a interferência entre células vizinhas (frequências).
         </Callout>
       </Panel>
 
-      <h2 className="section-title">6.2.1 Cálculos de parâmetros das antenas</h2>
+      <h2 className="section-title">Cálculos de parâmetros das antenas</h2>
       <div className="grid-2">
         <div className="stack">
           <Panel title="Parâmetros">

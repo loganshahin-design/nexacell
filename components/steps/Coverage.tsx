@@ -80,16 +80,16 @@ export default function Coverage() {
               ? `Cumpre a meta de ${fmt(p.coverageTarget)} %.`
               : `Abaixo da meta de ${fmt(p.coverageTarget)} %.`}{" "}
             Conta os pontos com RSRP mediano ≥ {fmt(cov.designRsrp, 1)} dBm, ou
-            seja o limiar de {fmt(p.rsrpMin)} dBm mais as margens do passo 6.1.2.
+            seja o limiar de {fmt(p.rsrpMin)} dBm mais as margens do dimensionamento.
           </Hero>
           {!ok && (
             <Callout tone="warn" title="Como melhorar">
-              Veja as zonas vermelhas no mapa e, em 6.1.4, aproxime ou acrescente
+              Veja as zonas vermelhas no mapa e, na localização das estações, aproxime ou acrescente
               BTS nesses sítios. Também pode subir a altura das antenas ou ajustar
-              o tilt (6.2).
+              o tilt (antenas).
               <div className="button-row">
                 <button className="btn" onClick={() => setStep(5)}>
-                  Ir para 6.1.4
+                  Ajustar estações
                 </button>
               </div>
             </Callout>
@@ -117,7 +117,7 @@ export default function Coverage() {
               value={space}
               options={[
                 ["2d", "Mapa 2D"],
-                ["3d", "Relevo 3D"],
+                ["3d", "Sinal em 3D"],
                 ["real", "Mapa real 3D"],
               ]}
               onChange={(v) => setSpace(v as typeof space)}
@@ -133,7 +133,7 @@ export default function Coverage() {
                 hBeam={p.hBeam}
                 radiusKm={dim.link.radius}
                 samples={drive.samples}
-                label="Relevo 3D do sinal previsto"
+                label="Sinal em 3D do sinal previsto"
               />
               <p className="caption">
                 A altura de cada coluna é o RSRP previsto; a cor é a classe do

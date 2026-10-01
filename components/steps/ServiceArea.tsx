@@ -45,14 +45,14 @@ export function DecisionCard() {
   return (
     <div className="decision-card">
       <span className="hero-label">Decisão: número de BTS</span>
-      {bar("Capacidade (6.1.1)", dim.byCapacity, dim.byCapacity >= dim.byCoverage)}
-      {bar("Cobertura (6.1.2)", dim.byCoverage, dim.byCoverage >= dim.byCapacity)}
+      {bar("Capacidade", dim.byCapacity, dim.byCapacity >= dim.byCoverage)}
+      {bar("Cobertura", dim.byCoverage, dim.byCoverage >= dim.byCapacity)}
       <p>
         São precisas <strong>{dim.required} BTS</strong>.{" "}
         {dim.limiting === "capacidade" &&
-          `Quem manda é a capacidade: ${dim.byCoverage} BTS cobririam a zona, mas não teriam débito para o tráfego de ${dim.traffic.year}.`}
+          `A capacidade determina o dimensionamento: ${dim.byCoverage} BTS cobririam a zona, mas não teriam débito para o tráfego de ${dim.traffic.year}.`}
         {dim.limiting === "cobertura" &&
-          `Quem manda é a cobertura: ${dim.byCapacity} BTS teriam capacidade suficiente, mas não chegariam a toda a zona.`}
+          `A cobertura determina o dimensionamento: ${dim.byCapacity} BTS teriam capacidade suficiente, mas não chegariam a toda a zona.`}
         {dim.limiting === "ambos" && "Os dois critérios pedem o mesmo número."}
       </p>
     </div>

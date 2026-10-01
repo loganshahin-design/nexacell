@@ -40,7 +40,7 @@ export default function Summary() {
             </div>
             {!ok && (
               <Callout tone="warn">
-                A cobertura ainda não cumpre a meta. Ajuste as BTS em 6.1.4 antes de
+                A cobertura ainda não cumpre a meta. Ajuste as BTS na localização das estações antes de
                 imprimir o relatório.
               </Callout>
             )}
@@ -59,7 +59,7 @@ export default function Summary() {
         <Compare />
         <Panel title="Relatório e ficheiros">
           <p>
-            O relatório abaixo segue a numeração da docente (6 → 6.2.1) e usa
+            O relatório reúne os parâmetros, resultados e fontes do projecto. Usa
             sempre os valores actuais. Use “Imprimir” e escolha “Guardar como PDF”.
           </p>
           <div className="button-row">

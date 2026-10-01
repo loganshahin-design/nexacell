@@ -17,7 +17,7 @@ import FieldTest from "./steps/FieldTest";
 import Antennas from "./steps/Antennas";
 import Summary from "./steps/Summary";
 
-const pages = [null, Scenario, Traffic, ServiceArea, Reuse, Sites, Coverage, FieldTest, Antennas, Summary];
+const pages = [Cover, Scenario, Traffic, ServiceArea, Reuse, Sites, Coverage, FieldTest, Antennas, Summary];
 const last = steps.length - 1;
 
 // Aviso discreto depois de cada gravação automática.
@@ -62,7 +62,7 @@ function usePresentationKeys() {
         setStep(Math.min(last, step + 1));
       } else if (["ArrowLeft", "PageUp"].includes(e.key)) {
         e.preventDefault();
-        setStep(Math.max(1, step - 1));
+        setStep(Math.max(0, step - 1));
       } else if (e.key === "Escape") setPresenting(false);
     };
     const onFullscreen = () => {
@@ -85,11 +85,11 @@ function PresentBar() {
   };
   return (
     <div className="present-bar" role="toolbar" aria-label="Controlo da apresentação">
-      <button onClick={() => setStep(Math.max(1, step - 1))} aria-label="Passo anterior" disabled={step <= 1}>
+      <button onClick={() => setStep(Math.max(0, step - 1))} aria-label="Passo anterior" disabled={step <= 0}>
         <ArrowLeft size={16} />
       </button>
       <span>
-        {steps[step].code || steps[step].short} · {step}/{last}
+        {steps[step].short} · {step}/{last}
       </span>
       <button onClick={() => setStep(Math.min(last, step + 1))} aria-label="Passo seguinte" disabled={step >= last}>
         <ArrowRight size={16} />
@@ -106,7 +106,6 @@ function Workspace() {
   const menu = useMenu();
   usePresentationKeys();
   if (!loaded) return <div className="loading">A carregar o projecto…</div>;
-  if (step === 0) return <Cover />;
   const Page = pages[step]!;
   return (
     <div className={`app ${presenting ? "presenting" : ""}`}>

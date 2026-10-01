@@ -49,7 +49,7 @@ export function OriginBadge({
   const tip = s
     ? `${s.source} · ${s.date}${origin === "REAL" ? ". Clique para abrir a fonte." : ""}`
     : origin === "PRESSUPOSTO"
-      ? "Escolha do grupo, justificada na ajuda do campo."
+      ? "Parâmetro de planeamento, explicado na ajuda do campo."
       : "Resultado das fórmulas.";
   return s && origin === "REAL" ? (
     <a

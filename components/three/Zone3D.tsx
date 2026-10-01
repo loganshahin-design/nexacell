@@ -422,7 +422,7 @@ export default function Zone3D({
       </div>
       <div className="stage-hud">
         <div className="chips" role="group" aria-label="Camadas da vista 3D">
-          {chip("relief", "Relevo de sinal")}
+          {chip("relief", "Sinal em 3D")}
           {chip("sectors", "Sectores")}
           {!reduce && chip("waves", "Ondas")}
           {chip("drive", "Drive test N1")}

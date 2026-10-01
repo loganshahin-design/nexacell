@@ -80,11 +80,11 @@ export default function Scenario() {
         </Panel>
       </div>
 
-      <Callout tone="warn" title="Atenção a uma ideia errada">
-        Não é verdade que Marracuene não tenha 3G ou 4G. O 4G chegou ao distrito
+      <Callout title="Uma rede preparada para crescer">
+        Marracuene já dispõe de cobertura móvel. O 4G chegou ao distrito
         em 2019 (1.ª fase da Tmcel), e as medições do INCM em Junho de 2023
         mostram RSRP ≥ −105 dBm em 98,9 % (Tmcel) a 100 % (Vodacom e Movitel)
-        das estradas principais. O nosso projecto é de <strong>reforço</strong>:
+        das estradas principais. Este projecto é de <strong>reforço</strong>:
         acompanhar o crescimento da procura e cobrir também os bairros fora das
         estradas.
       </Callout>
@@ -98,7 +98,7 @@ export default function Scenario() {
         </p>
       </Panel>
 
-      <Panel title="Dados reais usados">
+      <Panel title="Dados e fontes de referência">
         <div className="table-wrap">
           <table className="data">
             <thead>
@@ -141,7 +141,7 @@ export default function Scenario() {
           formula={String.raw`P_{2025} = P_{\mathrm{WorldPop}} \times \frac{P_{\mathrm{INE},2020}}{P_{\mathrm{WorldPop,distrito}}} \times \frac{P_{\mathrm{INE},2025}}{P_{\mathrm{INE},2020}}`}
           substitution={String.raw`P_{2025} = 38\,632 \times \frac{254\,139}{286\,324} \times \frac{305\,216}{254\,139} = ${n(zonePopulation2020, 0)} \times ${n(305216 / 254139, 3)}`}
           result={`${fmt(zonePopulation2025)} habitantes`}
-          note="O resultado é uma estimativa com base real: está marcado como REAL porque cada factor tem fonte."
+          note="Estimativa calculada a partir de dados do WorldPop e de projecções do INE; não corresponde a uma contagem directa."
         />
       </Calc>
     </>

@@ -60,12 +60,12 @@ export default function Report() {
         <p>Comunicações Móveis</p>
         <h1>Dimensionamento de uma rede móvel 4G LTE em Marracuene</h1>
         <p>Zona de expansão de Michafutene – corredor da N1, Província de Maputo</p>
-        <p>Grupo: {team.join(", ")}</p>
+        <p>Autores: {team.join(", ")}</p>
         <p>{today}</p>
       </header>
 
       <section>
-        <h2>6. Projecto de um sistema de CM</h2>
+        <h2>Enquadramento do projecto</h2>
         <p>
           <strong>Objectivo.</strong> Dimensionar a rede 4G LTE de um operador para
           servir a procura prevista em {t.year} na zona de Michafutene, cumprindo a
@@ -104,8 +104,8 @@ export default function Report() {
       </section>
 
       <section>
-        <h2>6.1 Elementos de dimensionamento</h2>
-        <h3>6.1.1 Volume de tráfego</h3>
+        <h2>Elementos de dimensionamento</h2>
+        <h3>Volume de tráfego</h3>
         <table className="data compact">
           <tbody>
             <tr><td>População {t.year}</td><td>{fmt(t.population)} hab. (crescimento {fmt(p.growth, 1)} %/ano)</td></tr>
@@ -129,7 +129,7 @@ export default function Report() {
           </tbody>
         </table>
 
-        <h3>6.1.2 Área de serviço</h3>
+        <h3>Área de serviço</h3>
         <table className="data compact">
           <tbody>
             <tr><td>Frequência / largura de banda</td><td>{fmt(p.frequency)} MHz / {fmt(p.bandwidth)} MHz ({l.nRb} RB)</td></tr>
@@ -144,7 +144,7 @@ export default function Report() {
           </tbody>
         </table>
 
-        <h3>6.1.3 Padrão de reuso</h3>
+        <h3>Padrão de reuso</h3>
         <table className="data compact">
           <thead>
             <tr><th>N</th><th>D/R</th><th>C/I</th><th>Débito por sector</th></tr>
@@ -159,7 +159,7 @@ export default function Report() {
         </table>
         <p>O projecto usa N = {p.reuse}. O LTE aceita um C/I baixo graças à modulação adaptativa, à sectorização e à coordenação de interferência (ICIC).</p>
 
-        <h3>6.1.4 Localização das BTS</h3>
+        <h3>Localização das BTS</h3>
         <ZoneSketch stations={stations} label="Localização das BTS" />
         <table className="data compact">
           <thead>
@@ -176,7 +176,7 @@ export default function Report() {
           </tbody>
         </table>
 
-        <h3>6.1.5 Diagrama de cobertura</h3>
+        <h3>Diagrama de cobertura</h3>
         <ZoneSketch
           stations={stations}
           cells={cov.cells.map((c) => ({ ...c, color: classes.find((k) => k.key === c.cls)!.color }))}
@@ -188,7 +188,7 @@ export default function Report() {
           <strong>{fmt(cov.designCoverage, 1)} %</strong> (meta {fmt(p.coverageTarget)} %). Área com RSRP mediano ≥ {fmt(p.rsrpMin)} dBm: {fmt(cov.meetsThreshold, 1)} %.
         </p>
 
-        <h3>6.1.6 Teste de campo (previsto)</h3>
+        <h3>Simulação de percurso</h3>
         <p>
           Previsão para {dt.samples.length} amostras (uma a cada 50 m) ao longo de {fmt(routeLength(zone.route), 1)} km da N1: {fmt(dt.meets, 1)} % com RSRP ≥ {fmt(p.rsrpMin)} dBm; RSRP entre {fmt(dt.min, 1)} e {fmt(dt.max, 1)} dBm. Não é uma medição.
         </p>
@@ -199,8 +199,8 @@ export default function Report() {
       </section>
 
       <section>
-        <h2>6.2 Antenas para sistemas sem fio</h2>
-        <h3>6.2.1 Vantagens e aplicações</h3>
+        <h2>Antenas para sistemas sem fio</h2>
+        <h3>Vantagens e aplicações</h3>
         <p>
           Omnidireccionais cobrem 360° com uma só antena (sites rurais); painéis
           sectoriais dão mais ganho e triplicam a capacidade com 3 sectores (macro-células
@@ -208,7 +208,7 @@ export default function Report() {
           parabólicas fazem a transmissão (backhaul) entre sites; antenas activas
           com beamforming servem zonas muito densas (5G).
         </p>
-        <h3>6.2.1 Cálculos de parâmetros das antenas</h3>
+        <h3>Cálculos de parâmetros das antenas</h3>
         <table className="data compact">
           <tbody>
             <tr><td>Comprimento de onda / dipolo λ/2</td><td>{fmt(a.lambda * 100, 2)} cm / {fmt(a.dipole * 100, 2)} cm</td></tr>

@@ -14,17 +14,19 @@ npm run test:e2e     # testes no navegador (precisa do servidor a correr)
 npm run typecheck
 ```
 
-No passo **Resumo**, "Imprimir / guardar PDF" gera o relatório A4 com a numeração da docente.
+Em **Relatórios**, "Imprimir / guardar PDF" gera o relatório A4 com os parâmetros, resultados e fontes.
+
+A aplicação abre na **Visão geral**, com indicadores, atalhos de planeamento e a cena 3D animada. O menu está organizado em Projecto, Planeamento, Análise e Resultados. Essencial mostra os principais controlos; Detalhado acrescenta parâmetros e fórmulas.
 
 O `npm install` copia automaticamente o *worker* do MapLibre para `public/maplibre/` (script `postinstall`). As fontes (Archivo, Source Sans 3, IBM Plex Mono) vêm em pacotes npm e funcionam sem Internet.
 
 ### Para a apresentação
 
-- **Capa com voo de abertura:** a câmara desce sobre Michafutene e as torres acendem uma a uma ("Repetir voo" para mostrar de novo).
-- **Apresentar** (na capa ou na barra de cima): ecrã inteiro, um passo de cada vez; **→ / ←** mudam de passo, **Esc** sai.
-- **6.1.5 Cobertura:** três vistas — *Mapa 2D*, *Relevo 3D* (a altura das colunas é o sinal) e *Mapa real 3D* (edifícios do OpenStreetMap; precisa de Internet). "Guardar imagem" cria um PNG para o relatório ou os diapositivos.
-- **6.1.6 Teste de campo:** "Percorrer a N1" anima o carro de medição e o gráfico ao mesmo tempo.
-- **Resumo → Comparar cenários:** hoje contra 2030, 1800 contra 800 MHz, exterior contra dentro de casa.
+- **Visão geral com voo de abertura:** a câmara desce sobre Michafutene e as torres acendem uma a uma ("Repetir voo" para mostrar de novo).
+- **Apresentar** (na barra de cima): ecrã inteiro, um passo de cada vez; **→ / ←** mudam de passo, **Esc** sai.
+- **Cobertura:** três vistas — *Mapa 2D*, *Sinal em 3D* (a altura das colunas é o sinal) e *Mapa real 3D* (edifícios do OpenStreetMap; precisa de Internet). "Guardar imagem" cria um PNG para o relatório ou os diapositivos.
+- **Percurso:** "Percorrer a N1" anima o carro de medição e o gráfico ao mesmo tempo.
+- **Relatórios → Comparar cenários:** hoje contra 2030, 1800 contra 800 MHz, exterior contra dentro de casa.
 
 Todas as animações respeitam a opção "reduzir movimento" do sistema operativo.
 

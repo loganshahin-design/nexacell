@@ -6,3 +6,13 @@ playwright-report/
 *.tsbuildinfo
 .scratch/
 public/maplibre/
+
+# secrets & local env
+.env*
+
+# logs / OS / tooling
+*.log
+.DS_Store
+Thumbs.db
+.vercel/
+playwright/.cache/

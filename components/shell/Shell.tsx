@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
-  Check,
+  LayoutDashboard, MapPin, BarChart3, SlidersHorizontal, Waves, MapPinned, Map, Route, Antenna, FileText,
   Menu,
   Moon,
   Presentation,
@@ -18,11 +18,13 @@ import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import { StepTransition } from "@/components/motion/StepTransition";
 import { fmt } from "@/utils/format";
 
+const navIcons = [LayoutDashboard, MapPin, BarChart3, SlidersHorizontal, Waves, MapPinned, Map, Route, Antenna, FileText];
+
 function Decision() {
   const { dim } = useProject();
   return (
     <div className="decision" aria-live="polite">
-      <span className="decision-label">Decisão actual</span>
+      <span className="decision-label">Estações necessárias</span>
       <strong>
         <AnimatedNumber value={dim.required} /> BTS
       </strong>
@@ -43,7 +45,7 @@ function Decision() {
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { step, setStep } = useProject();
   return (
-    <aside className={`sidebar ${open ? "open" : ""}`} aria-label="Passos do projecto">
+    <aside className={`sidebar ${open ? "open" : ""}`} aria-label="Navegação do projecto">
       <div className="brand">
         <RadioTower size={22} aria-hidden />
         <div>
@@ -56,28 +58,30 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       </div>
       <nav>
         <ol className="steps">
-          {steps.map((s, i) =>
-            i === 0 ? null : (
+          {steps.map((s, i) => {
+            const Icon = navIcons[i];
+            return (
               <li key={s.title}>
+                {(i === 0 || s.group !== steps[i - 1].group) && <p className="nav-group">{s.group}</p>}
                 <button
-                  className={`step-link ${i === step ? "active" : ""} ${i < step ? "done" : ""}`}
-                  aria-current={i === step ? "step" : undefined}
+                  className={`step-link ${i === step ? "active" : ""}`}
+                  aria-current={i === step ? "page" : undefined}
                   onClick={() => {
                     setStep(i);
                     onClose();
                   }}
                 >
                   <span className="step-num" aria-hidden>
-                    {i < step ? <Check size={13} /> : i}
+                    <Icon size={17} />
                   </span>
                   <span className="step-text">
-                    {s.code && <small>{s.code}</small>}
+                    
                     {s.short}
                   </span>
                 </button>
               </li>
-            ),
-          )}
+            );
+          })}
         </ol>
       </nav>
       <Decision />
@@ -95,25 +99,20 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
   const s = steps[step];
   return (
     <header className="topbar">
-      <button className="icon-btn only-mobile" onClick={onMenu} aria-label="Abrir menu dos passos">
+      <button className="icon-btn only-mobile" onClick={onMenu} aria-label="Abrir navegação">
         <Menu size={20} />
       </button>
       <div className="topbar-step">
-        <span>
-          Passo {step} de {steps.length - 1}
-        </span>
-        <div className="progress" aria-hidden>
-          <i style={{ width: `${(step / (steps.length - 1)) * 100}%` }} />
-        </div>
-        <strong className="only-mobile">{s.short}</strong>
+        <span>{s.group}</span>
+        <strong>{s.short}</strong>
       </div>
       <div className="topbar-tools">
         <Segmented
           label="Nível de detalhe"
           value={mode}
           options={[
-            ["basico", "Básico"],
-            ["avancado", "Avançado"],
+            ["basico", "Essencial"],
+            ["avancado", "Detalhado"],
           ]}
           onChange={(v) => setMode(v as typeof mode)}
         />
@@ -152,7 +151,7 @@ function StepContent({ children }: { children: React.ReactNode }) {
   return (
     <article className="step">
       <header className="step-head">
-        {s.code && <span className="kicker">{s.code}</span>}
+        <span className="kicker">{s.group}</span>
         <h1 tabIndex={-1} ref={heading}>
           {s.title}
         </h1>
@@ -160,9 +159,9 @@ function StepContent({ children }: { children: React.ReactNode }) {
       </header>
       <div className="step-body">{children}</div>
       <footer className="step-nav">
-        {prev && step > 1 ? (
+        {prev && step > 0 ? (
           <button className="btn ghost" onClick={() => setStep(step - 1)}>
-            <ArrowLeft size={16} /> {prev.code ? `${prev.code} ` : ""}
+            <ArrowLeft size={16} /> 
             {prev.short}
           </button>
         ) : (
@@ -170,7 +169,7 @@ function StepContent({ children }: { children: React.ReactNode }) {
         )}
         {next && (
           <button className="btn primary" onClick={() => setStep(step + 1)}>
-            Próximo: {next.code ? `${next.code} ` : ""}
+            Próximo:{" "}
             {next.short} <ArrowRight size={16} />
           </button>
         )}

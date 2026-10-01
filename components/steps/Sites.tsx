@@ -93,7 +93,7 @@ export default function Sites() {
                 value={preview.designCoverage}
                 digits={1}
                 unit="%"
-                note={`meta ${fmt(p.coverageTarget)} % · detalhe em 6.1.5`}
+                note={`meta ${fmt(p.coverageTarget)} % · detalhe na cobertura`}
               />
               <Stat label="Distância ideal" value={fmt(dim.spacing, 2)} unit="km" />
             </div>
@@ -165,7 +165,7 @@ export default function Sites() {
               label="Mapa editável das BTS"
             />
             <p className="caption">
-              Círculos: raio de {fmt(dim.link.radius, 2)} km calculado em 6.1.2.
+              Círculos: raio de {fmt(dim.link.radius, 2)} km calculado no dimensionamento.
             </p>
           </Panel>
           <Panel title="Lista de BTS">
