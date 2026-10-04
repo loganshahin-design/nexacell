@@ -16,12 +16,13 @@ npm run typecheck
 
 Em **Relatórios**, "Imprimir / guardar PDF" gera o relatório A4 com os parâmetros, resultados e fontes.
 
-A aplicação abre na **Visão geral**, com indicadores, atalhos de planeamento e a cena 3D animada. O menu está organizado em Projecto, Planeamento, Análise e Resultados. Essencial mostra os principais controlos; Detalhado acrescenta parâmetros e fórmulas.
+A aplicação abre num **ecrã de entrada**: a Terra a rodar no espaço, o cartão do projecto com a equipa e o botão **Entrar** (ou a tecla Enter). Ao entrar, a câmara faz um **voo do espaço até Michafutene** (Terra → África Austral → Moçambique → Província de Maputo → Marracuene → Michafutene, ≈ 10 s; "Saltar" ou Esc para ir directo) e mostra a zona, a N1 e as BTS antes de abrir a **Visão geral**, com indicadores, atalhos de planeamento e a cena 3D animada. **Sair** (barra de cima) ou o logótipo do menu voltam ao ecrã de entrada. O menu está organizado em Projecto, Planeamento, Análise e Resultados. Essencial mostra os principais controlos; Detalhado acrescenta parâmetros e fórmulas.
 
 O `npm install` copia automaticamente o *worker* do MapLibre para `public/maplibre/` (script `postinstall`). As fontes (Archivo, Source Sans 3, IBM Plex Mono) vêm em pacotes npm e funcionam sem Internet.
 
 ### Para a apresentação
 
+- **Voo do espaço:** com Internet usa imagens de satélite reais (Esri; se falharem, Sentinel-2 da EOX) num globo MapLibre. Sem Internet passa sozinho para uma Terra 3D offline (imagem da NASA incluída em `public/intro/`). Na Visão geral, "Repetir voo do espaço" mostra-o de novo. **Testem a ligação da sala antes:** com uma rede lenta, deixem o ecrã de entrada aberto uns 15 s antes de carregar em Entrar (as imagens da descida vão sendo carregadas em segundo plano).
 - **Visão geral com voo de abertura:** a câmara desce sobre Michafutene e as torres acendem uma a uma ("Repetir voo" para mostrar de novo).
 - **Apresentar** (na barra de cima): ecrã inteiro, um passo de cada vez; **→ / ←** mudam de passo, **Esc** sai.
 - **Cobertura:** três vistas — *Mapa 2D*, *Sinal em 3D* (a altura das colunas é o sinal) e *Mapa real 3D* (edifícios do OpenStreetMap; precisa de Internet). "Guardar imagem" cria um PNG para o relatório ou os diapositivos.
@@ -86,6 +87,9 @@ Marracuene **já tem 4G** desde 2019, e o INCM mediu em 2023 que as estradas pri
 - `components/steps/` — um ficheiro por passo; `components/shell/` — menu, barra superior e navegação; `components/Report.tsx` — relatório A4.
 - `components/motion/` — animações (Motion): número que conta, transição entre passos, funil, cascata do enlace.
 - `components/three/Zone3D.tsx` — cena 3D (React Three Fiber); `components/map/RealMap3D.tsx` — mapa real 3D (MapLibre + OpenFreeMap); `components/Compare.tsx` — comparador de cenários.
-- `hooks/useProject.tsx` — estado único, guardado no navegador (`localStorage`, chave `nexacell-v2`).
+- `components/intro/` — ecrã de entrada e voo do espaço: `Welcome.tsx` (cartão de entrada), `SpaceIntro.tsx` (fases, HUD, chegada), `GlobeMap.tsx` (globo de satélite MapLibre), `OfflineGlobe.tsx` (Terra 3D offline), `Starfield.tsx`; etapas e fontes de imagem em `data/intro.ts`; estilos em `app/intro.css`.
+- `hooks/useProject.tsx` — estado único, guardado no navegador (`localStorage`, chave `nexacell-v2`). O ecrã de entrada não se guarda: cada visita começa nele.
+
+Imagens do voo do espaço: Esri World Imagery (Esri, Maxar, Earthstar Geographics); Sentinel-2 cloudless da EOX IT Services (contém dados Copernicus Sentinel modificados, 2020); NASA Visible Earth, Blue Marble (domínio público).
 
 Referências técnicas: COST 231 Final Report (1999); Hata (1980); 3GPP TR 36.814 e TS 36.211; Holma & Toskala, *LTE for UMTS* (2011); ITU-R P.525.

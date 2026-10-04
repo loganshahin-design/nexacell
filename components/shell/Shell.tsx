@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowRight,
   LayoutDashboard, MapPin, BarChart3, SlidersHorizontal, Waves, MapPinned, Map, Route, Antenna, FileText,
+  LogOut,
   Menu,
   Moon,
   Presentation,
@@ -43,15 +44,17 @@ function Decision() {
 }
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { step, setStep } = useProject();
+  const { step, setStep, setEntered } = useProject();
   return (
     <aside className={`sidebar ${open ? "open" : ""}`} aria-label="Navegação do projecto">
       <div className="brand">
-        <RadioTower size={22} aria-hidden />
-        <div>
-          <strong>NexaCell</strong>
-          <span>Dimensionamento LTE · Marracuene</span>
-        </div>
+        <button className="brand-home" onClick={() => setEntered(false)} title="Voltar ao ecrã de entrada" aria-label="Voltar ao ecrã de entrada">
+          <RadioTower size={22} aria-hidden />
+          <div>
+            <strong>NexaCell</strong>
+            <span>Dimensionamento LTE · Marracuene</span>
+          </div>
+        </button>
         <button className="icon-btn only-mobile" onClick={onClose} aria-label="Fechar menu">
           <X size={18} />
         </button>
@@ -95,7 +98,7 @@ export function startPresentation(setPresenting: (v: boolean) => void) {
 }
 
 export function TopBar({ onMenu }: { onMenu: () => void }) {
-  const { step, mode, setMode, theme, setTheme, setPresenting } = useProject();
+  const { step, mode, setMode, theme, setTheme, setPresenting, setEntered } = useProject();
   const s = steps[step];
   return (
     <header className="topbar">
@@ -131,6 +134,10 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
           title={theme === "light" ? "Modo escuro" : "Modo claro"}
         >
           {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
+        </button>
+        <button className="btn ghost exit-btn" onClick={() => setEntered(false)} title="Voltar ao ecrã de entrada" aria-label="Sair">
+          <LogOut size={17} aria-hidden />
+          <span className="hide-small">Sair</span>
         </button>
       </div>
     </header>

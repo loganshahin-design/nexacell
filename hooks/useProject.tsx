@@ -68,6 +68,9 @@ function useProjectState() {
   // Hora da última gravação feita por uma alteração do utilizador.
   const [savedAt, setSavedAt] = useState(0);
   const [presenting, setPresenting] = useState(false);
+  // Ecrã de entrada e voo do espaço: não se guardam, cada visita começa no login.
+  const [entered, setEntered] = useState(false);
+  const [spaceTour, setSpaceTour] = useState(false);
   const lastData = useRef<Pick<Stored, "params" | "stations"> | null>(null);
 
   useEffect(() => {
@@ -121,6 +124,10 @@ function useProjectState() {
     savedAt,
     presenting,
     setPresenting,
+    entered,
+    setEntered,
+    spaceTour,
+    setSpaceTour,
     dim,
     stations,
     isAutomatic: state.stations === null,

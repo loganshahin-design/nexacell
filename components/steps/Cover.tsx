@@ -1,5 +1,7 @@
 "use client";
-import { ArrowRight, MapPin, RadioTower, BarChart3 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "motion/react";
+import { ArrowRight, MapPin, RadioTower, BarChart3, Earth } from "lucide-react";
 import { useProject } from "@/hooks/useProject";
 import { Callout, Panel, Stat } from "@/components/ui";
 import { useCoverage, Zone3D } from "./Coverage";
@@ -9,9 +11,17 @@ import { fmt } from "@/utils/format";
 export const team = ["Fahima Samsudin", "Muhammad Shahin", "Saudah Salim"];
 
 export default function Cover() {
-  const { setStep, params: p, stations, dim } = useProject();
+  const { setStep, params: p, stations, dim, spaceTour, setSpaceTour } = useProject();
   const cov = useCoverage();
   const drive = useDriveTest();
+  const reduce = useReducedMotion();
+  // Depois do voo do espaço, a cena 3D recomeça o seu voo de abertura.
+  const [sceneKey, setSceneKey] = useState(0);
+  const wasTouring = useRef(false);
+  useEffect(() => {
+    if (wasTouring.current && !spaceTour) setSceneKey((k) => k + 1);
+    wasTouring.current = spaceTour;
+  }, [spaceTour]);
   const active = stations.filter((s) => s.enabled).length;
   const covered = cov.designCoverage >= p.coverageTarget;
   const enough = active >= dim.required;
@@ -52,8 +62,20 @@ export default function Cover() {
             </div>
           </Panel>
         </div>
-        <Panel title="A rede em perspectiva" aside={<span className="badge calculado">Simulação</span>}>
-          <Zone3D className="overview-stage" cells={cov.cells} stations={stations} sectors={p.sectors} hBeam={p.hBeam} radiusKm={dim.link.radius} samples={drive.samples} intro showExport={false} label="Vista 3D da zona de Michafutene com as BTS e o sinal previsto" />
+        <Panel
+          title="A rede em perspectiva"
+          aside={
+            <div className="panel-aside">
+              {!reduce && (
+                <button className="btn ghost small" onClick={() => setSpaceTour(true)} disabled={spaceTour}>
+                  <Earth size={15} aria-hidden /> Repetir voo do espaço
+                </button>
+              )}
+              <span className="badge calculado">Simulação</span>
+            </div>
+          }
+        >
+          <Zone3D key={sceneKey} className="overview-stage" cells={cov.cells} stations={stations} sectors={p.sectors} hBeam={p.hBeam} radiusKm={dim.link.radius} samples={drive.samples} intro showExport={false} label="Vista 3D da zona de Michafutene com as BTS e o sinal previsto" />
           <p className="caption">Arraste para explorar a cena. As cores representam o sinal previsto; as torres representam as estações do projecto.</p>
         </Panel>
       </div>

@@ -12,10 +12,18 @@ const titles = [
   "Resumo e relatórios",
 ];
 
+// Passa o ecrã de entrada. Os testes correm com movimento reduzido, por isso
+// não há voo do espaço: Entrar abre logo a Visão geral.
+async function enter(page: Page) {
+  await page.getByRole("button", { name: "Entrar" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Visão geral" })).toBeVisible();
+}
+
 async function fresh(page: Page) {
   await page.goto("/");
   await page.evaluate(() => localStorage.clear());
   await page.reload();
+  await enter(page);
 }
 
 test("percorre todos os passos pelo percurso de planeamento, sem erros", async ({ page }) => {
@@ -46,9 +54,31 @@ test("a decisão é coerente entre passos e reage às entradas", async ({ page }
   // O nº de BTS colocadas no mapa segue o dimensionamento.
   await page.getByRole("button", { name: /Estações/ }).first().click();
   await expect(page.locator(".bts-table tbody tr")).toHaveCount(after);
-  // Persiste após recarregar.
+  // Persiste após recarregar (cada visita começa no ecrã de entrada).
   await page.reload();
+  await enter(page);
   await expect(sidebar).toHaveText(`${after} BTS`);
+});
+
+test("ecrã de entrada: Entrar abre a aplicação e Sair volta", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  const login = page.getByRole("region", { name: "Entrada do NexaCell" });
+  await expect(login.getByRole("heading", { level: 1, name: "NexaCell" })).toBeVisible();
+  for (const name of ["Fahima Samsudin", "Muhammad Shahin", "Saudah Salim"])
+    await expect(login.getByText(name)).toBeVisible();
+  await enter(page);
+  await expect(login).toHaveCount(0);
+  await page.getByRole("button", { name: "Sair" }).click();
+  await expect(page.getByRole("button", { name: "Entrar" })).toBeVisible();
+  // O logótipo do menu também volta ao ecrã de entrada.
+  await enter(page);
+  await page.getByRole("button", { name: "Voltar ao ecrã de entrada" }).click();
+  await expect(page.getByRole("button", { name: "Entrar" })).toBeVisible();
+  expect(errors).toEqual([]);
 });
 
 test("modo avançado mostra mais parâmetros e as fórmulas", async ({ page }) => {

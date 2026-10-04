@@ -32,7 +32,8 @@ function useDrivePlayback(total: number) {
     const t0 = performance.now();
     let last = 0;
     const tick = (now: number) => {
-      const f = Math.min(1, (now - t0) / (DRIVE_SECONDS * 1000));
+      // O instante do rAF pode ser anterior a t0; sem o max, km fica negativo.
+      const f = Math.min(1, Math.max(0, (now - t0) / (DRIVE_SECONDS * 1000)));
       if (now - last > 50 || f === 1) {
         last = now;
         setKm(f === 1 ? null : f * total);
@@ -68,7 +69,7 @@ export default function FieldTest() {
   );
   const current = useMemo(() => {
     if (drive.km === null || !dt.samples.length) return null;
-    const i = Math.min(dt.samples.length - 2, Math.floor(drive.km / 0.05));
+    const i = Math.max(0, Math.min(dt.samples.length - 2, Math.floor(drive.km / 0.05)));
     const a = dt.samples[i],
       b = dt.samples[i + 1];
     const t = Math.min(1, Math.max(0, (drive.km - a.km) / (b.km - a.km || 1)));

@@ -16,6 +16,8 @@ import Coverage from "./steps/Coverage";
 import FieldTest from "./steps/FieldTest";
 import Antennas from "./steps/Antennas";
 import Summary from "./steps/Summary";
+import Welcome from "./intro/Welcome";
+import SpaceIntro from "./intro/SpaceIntro";
 
 const pages = [Cover, Scenario, Traffic, ServiceArea, Reuse, Sites, Coverage, FieldTest, Antennas, Summary];
 const last = steps.length - 1;
@@ -102,10 +104,11 @@ function PresentBar() {
 }
 
 function Workspace() {
-  const { loaded, step, storageError, presenting } = useProject();
+  const { loaded, step, storageError, presenting, entered, spaceTour, setSpaceTour } = useProject();
   const menu = useMenu();
   usePresentationKeys();
   if (!loaded) return <div className="loading">A carregar o projecto…</div>;
+  if (!entered) return <Welcome />;
   const Page = pages[step]!;
   return (
     <div className={`app ${presenting ? "presenting" : ""}`}>
@@ -130,6 +133,7 @@ function Workspace() {
       </div>
       {presenting && <PresentBar />}
       <SavedToast />
+      {spaceTour && <SpaceIntro mode="replay" onDone={() => setSpaceTour(false)} />}
     </div>
   );
 }

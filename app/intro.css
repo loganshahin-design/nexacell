@@ -1,0 +1,167 @@
+/* ===== Ecrã de entrada e voo do espaço ===== */
+.brand-home { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; border-radius: 8px; }
+.brand-home:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.panel-aside { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.btn.small { min-height: 32px; padding: 5px 10px; font-size: 13px; border-radius: 8px; gap: 6px; }
+
+.intro {
+  --space-text: #e8f1ff;
+  --space-muted: rgba(220, 232, 255, 0.66);
+  --space-glass: rgba(7, 15, 30, 0.58);
+  --space-line: rgba(160, 200, 255, 0.18);
+  --space-amber: #ffb238;
+  --space-orange: #ff7d52;
+  --space-blue: #8cc4ff;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  color: var(--space-text);
+  background: radial-gradient(ellipse at 70% 40%, #0a1a33 0%, #040914 45%, #000 100%);
+  font-family: var(--body);
+  color-scheme: dark;
+}
+.intro.replay { z-index: 300; }
+.starfield, .globe-map, .globe-offline { position: absolute; inset: 0; width: 100%; height: 100%; }
+.globe-map .maplibregl-canvas { outline: none; }
+.intro .maplibregl-ctrl-attrib { background: rgba(0, 0, 0, 0.45); color: rgba(220, 232, 255, 0.75); font-size: 11px; }
+.intro .maplibregl-ctrl-attrib a { color: var(--space-blue); }
+.intro .maplibregl-ctrl-attrib-button { filter: invert(1); }
+.globe-credit { position: absolute; right: 12px; bottom: 8px; font-size: 11px; color: var(--space-muted); }
+.globe-map + .globe-credit { right: auto; left: 12px; max-width: calc(100% - 24px); }
+.globe-credit a { color: var(--space-blue); }
+.intro-vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%); }
+.intro-flash { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 50%, #cfe4ff 0%, #6f9fd6 45%, #13294a 100%); }
+
+/* Cartão de entrada */
+.login-wrap { position: absolute; inset: 0; display: flex; align-items: center; padding: 24px clamp(16px, 6vw, 96px); pointer-events: none; }
+.login-wrap > * { pointer-events: auto; }
+.login-card {
+  position: relative;
+  overflow: hidden;
+  width: min(460px, 100%);
+  display: grid;
+  gap: 14px;
+  padding: clamp(22px, 3.2vw, 34px);
+  border-radius: 22px;
+  background: var(--space-glass);
+  border: 1px solid var(--space-line);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+.login-sweep { position: absolute; top: -60%; left: -70%; width: 45%; height: 220%; transform: rotate(18deg); pointer-events: none; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent); animation: login-sweep 7s ease-in-out 1.5s infinite; }
+@keyframes login-sweep { 0% { left: -70%; } 45%, 100% { left: 130%; } }
+.login-logo { position: relative; width: 58px; height: 58px; display: grid; place-items: center; border-radius: 16px; color: var(--space-orange); background: rgba(255, 125, 82, 0.13); border: 1px solid rgba(255, 125, 82, 0.3); }
+.login-logo .arc { position: absolute; inset: 6px; border-radius: 50%; border: 2px solid var(--space-orange); opacity: 0; animation: login-arc 2.6s ease-out infinite; }
+.login-logo .a2 { animation-delay: 0.85s; }
+.login-logo .a3 { animation-delay: 1.7s; }
+@keyframes login-arc { 0% { transform: scale(0.5); opacity: 0.9; } 100% { transform: scale(2.1); opacity: 0; } }
+.login-kicker, .hud-kicker { margin: 0; font: 600 11.5px/1.2 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--space-amber); }
+.login-title { margin: 0; white-space: nowrap; perspective: 600px; font-family: var(--display); font-size: clamp(40px, 5.4vw, 66px); font-weight: 800; font-variation-settings: "wdth" 125; line-height: 0.95; letter-spacing: -0.02em; text-shadow: 0 0 40px rgba(140, 196, 255, 0.35); }
+.login-title span { display: inline-block; transform-origin: 50% 100%; }
+.login-title span:nth-child(n + 5) { color: var(--space-orange); }
+.login-sub { margin: 0; font-size: 18px; color: var(--space-text); opacity: 0.88; }
+.login-place { margin: 0; display: flex; align-items: center; gap: 7px; font: 13px/1.4 var(--mono); color: var(--space-blue); min-height: 1.4em; }
+.typewriter i { display: inline-block; width: 2px; height: 1.05em; margin-left: 2px; vertical-align: -0.15em; background: var(--space-blue); animation: caret 0.8s steps(1) infinite; }
+@keyframes caret { 50% { opacity: 0; } }
+.login-stats { margin: 4px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.login-stats div { display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: 2px; padding-top: 10px; border-top: 1px solid var(--space-line); }
+.login-stats dd { margin: 0; font: 800 clamp(22px, 3vw, 28px)/1 var(--display); font-variation-settings: "wdth" 115; font-variant-numeric: tabular-nums; }
+.login-stats dt { font-size: 12px; color: var(--space-muted); line-height: 1.25; }
+.login-team { list-style: none; margin: 2px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.login-team li { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; border-radius: 999px; font-size: 13.5px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--space-line); }
+.avatar { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; font: 600 10.5px var(--mono); color: #0a1424; background: linear-gradient(135deg, var(--space-blue), var(--space-amber)); }
+.login-enter {
+  position: relative;
+  overflow: hidden;
+  margin-top: 6px;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 14px;
+  color: #fff;
+  font: 700 17px var(--display);
+  font-variation-settings: "wdth" 115;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff8a5c, #e0531f);
+  box-shadow: 0 12px 34px rgba(255, 110, 60, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
+}
+.login-enter::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; left: -60%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent); transform: skewX(-20deg); animation: enter-shine 3.2s ease-in-out 2.4s infinite; }
+@keyframes enter-shine { 0% { left: -60%; } 40%, 100% { left: 130%; } }
+.login-enter:hover { filter: brightness(1.08); box-shadow: 0 16px 40px rgba(255, 110, 60, 0.5); }
+.login-enter svg { transition: transform 0.2s; }
+.login-enter:hover svg { transform: translateX(3px); }
+.login-enter:active { transform: scale(0.98); }
+.login-enter:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.login-hint { margin: 0; text-align: center; font-size: 12.5px; color: var(--space-muted); }
+.intro kbd { padding: 1px 6px; border-radius: 5px; font: 600 11px var(--mono); color: var(--space-text); background: rgba(255, 255, 255, 0.08); border: 1px solid var(--space-line); }
+
+/* Farol de Michafutene e BTS na chegada */
+/* Nota: o MapLibre posiciona .beacon e .globe-bts (absolute + transform); não
+   mudar position nem transform nestes elementos, só nos filhos. */
+.beacon { width: 18px; height: 18px; pointer-events: none; }
+.beacon b { position: absolute; inset: 4px; border-radius: 50%; background: var(--space-amber); box-shadow: 0 0 12px 4px rgba(255, 178, 56, 0.7); }
+.beacon i { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--space-amber); opacity: 0; animation: beacon 2.4s ease-out infinite; }
+.beacon i:nth-child(2) { animation-delay: 0.8s; }
+.beacon i:nth-child(3) { animation-delay: 1.6s; }
+@keyframes beacon { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(4.2); opacity: 0; } }
+.globe-bts { pointer-events: none; }
+.globe-bts-body { display: grid; justify-items: center; gap: 3px; animation: pin-in 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.globe-bts i { width: 13px; height: 13px; border-radius: 50%; background: var(--space-orange); border: 2px solid #fff; animation: pin-pulse 2s ease-out 2.2s infinite; }
+.globe-bts span { font: 600 10.5px var(--mono); color: #fff; text-shadow: 0 1px 3px #000, 0 0 6px #000; }
+@keyframes pin-in { from { opacity: 0; transform: translateY(-14px) scale(0.3); } to { opacity: 1; transform: none; } }
+@keyframes pin-pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 125, 82, 0.7); } 100% { box-shadow: 0 0 0 14px rgba(255, 125, 82, 0); } }
+
+/* HUD da descida */
+.intro-hud { position: absolute; top: clamp(16px, 6vh, 64px); left: clamp(16px, 4vw, 48px); width: min(340px, calc(100% - 32px)); display: grid; gap: 14px; padding: 18px 20px; border-radius: 18px; background: var(--space-glass); border: 1px solid var(--space-line); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.hud-place { position: relative; min-height: 64px; }
+.hud-place strong { display: block; font: 800 clamp(24px, 3vw, 32px)/1.05 var(--display); font-variation-settings: "wdth" 118; }
+.hud-place small { display: block; margin-top: 4px; font-size: 13px; color: var(--space-muted); }
+.hud-data { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 12px 18px; }
+.hud-data div { display: grid; gap: 2px; }
+.hud-data dt { font-size: 11px; color: var(--space-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.hud-data dd { margin: 0; font: 600 13.5px var(--mono); font-variant-numeric: tabular-nums; }
+.hud-rail { list-style: none; margin: 0; padding: 12px 0 0; display: grid; gap: 5px; border-top: 1px solid var(--space-line); }
+.hud-rail li { position: relative; padding-left: 18px; font-size: 12.5px; color: rgba(220, 232, 255, 0.36); transition: color 0.4s; }
+.hud-rail li::before { content: ""; position: absolute; left: 2px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: rgba(220, 232, 255, 0.25); transition: background 0.4s, box-shadow 0.4s; }
+.hud-rail li.past { color: rgba(220, 232, 255, 0.62); }
+.hud-rail li.past::before { background: var(--space-blue); }
+.hud-rail li.now { color: #fff; font-weight: 600; }
+.hud-rail li.now::before { background: var(--space-amber); box-shadow: 0 0 0 4px rgba(255, 178, 56, 0.25); }
+.intro-skip { position: absolute; top: 16px; right: 16px; display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 6px 12px; border-radius: 10px; color: var(--space-text); font: 600 13px var(--body); cursor: pointer; background: var(--space-glass); border: 1px solid var(--space-line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.intro-skip:hover { border-color: var(--space-blue); }
+.intro-skip:focus-visible { outline: 2px solid var(--space-blue); outline-offset: 2px; }
+
+/* Cartão de chegada */
+.arrival { position: absolute; left: 16px; right: 16px; bottom: clamp(16px, 6vh, 56px); margin-inline: auto; width: fit-content; max-width: calc(100% - 32px); display: grid; gap: 10px; padding: 18px 24px; border-radius: 18px; background: var(--space-glass); border: 1px solid var(--space-line); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.arrival > strong { font: 800 clamp(20px, 2.6vw, 26px)/1.1 var(--display); font-variation-settings: "wdth" 115; }
+.arrival ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 26px; }
+.arrival li { display: grid; gap: 1px; }
+.arrival li b { font: 800 24px/1 var(--display); font-variation-settings: "wdth" 115; font-variant-numeric: tabular-nums; color: var(--space-amber); }
+.arrival li span { font-size: 12px; color: var(--space-muted); }
+
+@media (max-width: 899px) {
+  .login-wrap { align-items: flex-end; justify-content: center; padding: 16px 16px 34px; }
+  .login-card { gap: 9px; padding: 18px 20px; border-radius: 18px; }
+  .login-logo { width: 46px; height: 46px; border-radius: 13px; }
+  .login-title { font-size: 44px; }
+  .login-sub { font-size: 16px; }
+  .login-place { font-size: 12px; }
+  .login-stats dd { font-size: 22px; }
+  .login-stats dt { font-size: 11px; }
+  .login-team li { font-size: 12.5px; }
+  .login-enter { min-height: 50px; }
+  .login-hint { display: none; }
+  .hud-rail { display: none; }
+  .intro-hud { top: 64px; }
+}
+@media (max-height: 760px) and (min-width: 900px) {
+  .login-card { gap: 10px; padding: 22px 26px; }
+  .login-title { font-size: 54px; }
+}

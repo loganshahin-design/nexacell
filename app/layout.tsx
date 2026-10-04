@@ -9,6 +9,7 @@ import "leaflet/dist/leaflet.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "katex/dist/katex.min.css";
 import "./globals.css";
+import "./intro.css";
 
 export const metadata: Metadata = {
   title: "NexaCell · Dimensionamento LTE em Marracuene",
