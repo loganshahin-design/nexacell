@@ -82,7 +82,8 @@ export default function Compare() {
     ["Raio da célula", A.d.link.radius, B.d.link.radius, 2, "km", false],
     ["BTS pela capacidade", A.d.byCapacity, B.d.byCapacity, 0, "", true],
     ["BTS pela cobertura (fórmula)", A.d.byCoverage, B.d.byCoverage, 0, "", true],
-    ["BTS pela cobertura (mapa, meta)", A.d.byMap, B.d.byMap, 0, "", true],
+    // NaN = mapa não verificado (acima do limite de BTS): mostra-se "—".
+    ["BTS pela cobertura (mapa, meta)", A.d.byMap ?? NaN, B.d.byMap ?? NaN, 0, "", true],
     ["BTS necessárias", A.d.required, B.d.required, 0, "", true],
     ["Cobertura prevista (projecto)", A.cov.designCoverage, B.cov.designCoverage, 1, "%", false],
   ];
@@ -92,7 +93,7 @@ export default function Compare() {
       : key === "banda"
         ? `A 800 MHz o raio passa de ${fmt(A.d.link.radius, 2)} para ${fmt(B.d.link.radius, 2)} km, mas com 10 MHz a capacidade por BTS cai para metade (${B.d.byCapacity} BTS pela capacidade). Por isso é comum usar as duas: a banda baixa para cobrir, 1800 MHz para capacidade.`
         : key === "interior"
-          ? `Exigir o sinal dentro de casa faz o raio cair de ${fmt(A.d.link.radius, 2)} para ${fmt(B.d.link.radius, 2)} km e as BTS pela cobertura subir de ${A.d.byCoverage} para ${B.d.byCoverage}.`
+          ? `Exigir o sinal dentro de casa faz o raio cair de ${fmt(A.d.link.radius, 2)} para ${fmt(B.d.link.radius, 2)} km e as BTS pela cobertura (fórmula da área) subir de ${A.d.byCoverage} para ${B.d.byCoverage}.${B.d.byMap === null ? " Com tantas BTS o mapa não é verificado aqui (cálculo pesado), por isso o valor real seria ainda maior." : ""}`
           : `Em Bobole (rural) cada célula chega a ${fmt(B.d.link.radius, 2)} km, contra ${fmt(A.d.link.radius, 2)} km em Michafutene, e ${B.d.required} BTS cobrem uma área ${fmt(B.area / A.area, 1)} vezes maior. Em Michafutene decide a ${A.d.limiting === "capacidade" ? "capacidade" : "cobertura"} (muita gente); em Bobole decide a ${B.d.limiting === "capacidade" ? "capacidade" : "cobertura"}: a fórmula pede ${B.d.byCoverage}, mas o mapa mostra que são precisas ${B.d.byMap} para cumprir a meta.`;
   return (
     <Panel
@@ -113,18 +114,18 @@ export default function Compare() {
         <div className="head num" role="columnheader">Diferença</div>
         {rows.map(([label, a, b, digits, unit, upIsCost]) => {
           const diff = b - a;
-          const tone = Math.abs(diff) < 1e-9 ? "" : (diff > 0) === upIsCost ? "up" : "down";
+          const tone = Number.isNaN(diff) || Math.abs(diff) < 1e-9 ? "" : (diff > 0) === upIsCost ? "up" : "down";
           return (
             <div key={label} role="row" style={{ display: "contents" }}>
               <div role="cell">{label}</div>
               <div className="num" role="cell">
-                {label === "Ano" ? a : <AnimatedNumber value={a} digits={digits} />} {unit}
+                {label === "Ano" ? a : Number.isNaN(a) ? "—" : <AnimatedNumber value={a} digits={digits} />} {Number.isNaN(a) ? "" : unit}
               </div>
               <div className="num" role="cell">
-                {label === "Ano" ? b : <AnimatedNumber value={b} digits={digits} />} {unit}
+                {label === "Ano" ? b : Number.isNaN(b) ? "—" : <AnimatedNumber value={b} digits={digits} />} {Number.isNaN(b) ? "" : unit}
               </div>
               <div className={`delta ${tone}`} role="cell">
-                {label === "Ano" ? "" : `${diff > 0 ? "+" : diff < 0 ? "−" : ""}${fmt(Math.abs(diff), digits)}`}
+                {label === "Ano" || Number.isNaN(diff) ? "" : `${diff > 0 ? "+" : diff < 0 ? "−" : ""}${fmt(Math.abs(diff), digits)}`}
               </div>
             </div>
           );

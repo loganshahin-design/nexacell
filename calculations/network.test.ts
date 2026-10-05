@@ -177,4 +177,12 @@ test("verificação no mapa: a meta de cobertura entra no nº de BTS", () => {
   assert.equal(rural.byMap, 4);
   assert.equal(rural.required, 4);
   assert.equal(rural.limiting, "cobertura");
+  // Dentro de casa (12 dB): a fórmula pede 30 BTS, acima do limite do mapa, e
+  // fica a valer a fórmula (sem o cálculo pesado).
+  const t0 = Date.now();
+  const indoor = dimensionWithMap({ ...defaults, indoorLoss: 12 }, zone.polygon, area);
+  assert.equal(indoor.byMap, null);
+  assert.equal(indoor.mapReason, "limite");
+  assert.equal(indoor.required, 30);
+  assert.ok(Date.now() - t0 < 500, "sem verificação no mapa deve ser imediato");
 });

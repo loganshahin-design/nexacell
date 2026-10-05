@@ -30,7 +30,7 @@ function Decision() {
         <AnimatedNumber value={dim.required} /> BTS
       </strong>
       <span>
-        capacidade {dim.byCapacity} · cobertura {dim.byCoverage} · mapa {dim.byMap}
+        capacidade {dim.byCapacity} · cobertura {dim.byCoverage} · mapa {dim.byMap ?? "—"}
       </span>
       <span className="decision-limit">
         Limita:{" "}

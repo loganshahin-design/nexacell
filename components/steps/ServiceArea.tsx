@@ -2,6 +2,7 @@
 import { useMemo } from "react";
 import { useProject } from "@/hooks/useProject";
 import { dimension, siteAreaFactor } from "@/calculations/network";
+import { mapLabel, mapNote } from "@/calculations/dimension";
 import {
   environmentCorrection,
   hataIntercept,
@@ -32,7 +33,8 @@ const indoorPresets: [string, string][] = [
 
 export function DecisionCard() {
   const { dim, params: p } = useProject();
-  const cover = Math.max(dim.byCoverage, dim.byMap);
+  const map = dim.byMap;
+  const cover = Math.max(dim.byCoverage, map ?? 0);
   const max = Math.max(dim.byCapacity, cover);
   const bar = (label: string, value: number, on: boolean) => (
     <div className={`crit ${on ? "on" : ""}`}>
@@ -47,16 +49,15 @@ export function DecisionCard() {
     <div className="decision-card">
       <span className="hero-label">Decisão: número de BTS</span>
       {bar("Capacidade", dim.byCapacity, dim.byCapacity >= cover)}
-      {bar("Cobertura (fórmula)", dim.byCoverage, dim.byCoverage >= dim.byCapacity && dim.byCoverage >= dim.byMap)}
-      {bar(`Cobertura (mapa, meta ${fmt(p.coverageTarget)} %)`, dim.byMap, dim.byMap >= dim.byCapacity && dim.byMap > dim.byCoverage)}
+      {bar("Cobertura (fórmula)", dim.byCoverage, dim.byCoverage >= dim.byCapacity && dim.byCoverage >= (map ?? 0))}
+      {map !== null && bar(`Cobertura (mapa, meta ${fmt(p.coverageTarget)} %)`, map, map >= dim.byCapacity && map > dim.byCoverage)}
       <p>
         São precisas <strong>{dim.required} BTS</strong>.{" "}
-        {!dim.mapReached &&
-          `A meta de ${fmt(p.coverageTarget)} % não se atinge com até ${dim.byMap} BTS colocadas automaticamente: reveja a meta ou os parâmetros. `}
+        {map === null && `${mapNote(dim, p.coverageTarget)} `}
         {dim.limiting === "capacidade" &&
-          `A capacidade determina o dimensionamento: para a cobertura bastariam ${cover} BTS (${dim.byCoverage} pela fórmula da área, ${dim.byMap} verificando a meta no mapa), mas não teriam débito para o tráfego de ${dim.traffic.year}.`}
+          `A capacidade determina o dimensionamento: para a cobertura bastariam ${cover} BTS${map !== null ? ` (${dim.byCoverage} pela fórmula da área, ${map} verificando a meta no mapa)` : ""}, mas não teriam débito para o tráfego de ${dim.traffic.year}.`}
         {dim.limiting === "cobertura" &&
-          `A cobertura determina o dimensionamento: ${dim.byCapacity} BTS teriam capacidade suficiente, mas ${dim.byMap > dim.byCoverage ? `a fórmula da área (${dim.byCoverage}) é optimista e o mapa mostra que só com ${dim.byMap} se cumpre a meta de ${fmt(p.coverageTarget)} %.` : "não chegariam a toda a zona."}`}
+          `A cobertura determina o dimensionamento: ${dim.byCapacity} BTS teriam capacidade suficiente, mas ${map !== null && map > dim.byCoverage ? `a fórmula da área (${dim.byCoverage}) é optimista e o mapa mostra que só com ${map} se cumpre a meta de ${fmt(p.coverageTarget)} %.` : "não chegariam a toda a zona."}`}
         {dim.limiting === "ambos" && "Os critérios pedem o mesmo número."}
       </p>
     </div>
@@ -172,7 +173,7 @@ export default function ServiceArea() {
                 ["Área servida por BTS", `${fmt(K, 2)} × R² = ${fmt(dim.siteArea, 2)} km²`],
                 ["Área da zona", `${fmt(zoneArea, 2)} km²`],
                 ["BTS por cobertura (fórmula)", `${dim.byCoverage}`, "total"],
-                [`Verificação no mapa (meta ${fmt(p.coverageTarget)} %)`, `${dim.byMap} BTS`],
+                [`Verificação no mapa (meta ${fmt(p.coverageTarget)} %)`, mapLabel(dim)],
                 ["Distância entre BTS", `≈ ${fmt(dim.spacing, 2)} km`],
               ]}
             />
@@ -237,7 +238,7 @@ export default function ServiceArea() {
         />
         <Equation
           formula={String.raw`n = \max(n_{\mathrm{cap}},\ n_{\mathrm{cob}},\ n_{\mathrm{mapa}})`}
-          substitution={String.raw`n = \max(${dim.byCapacity},\ ${dim.byCoverage},\ ${dim.byMap})`}
+          substitution={String.raw`n = \max(${dim.byCapacity},\ ${dim.byCoverage},\ ${dim.byMap ?? "\\text{—}"})`}
           result={`${dim.required} BTS`}
           note={`n_mapa: menor nº de BTS (colocadas automaticamente) com que o mapa de cobertura atinge a meta de ${fmt(p.coverageTarget)} % da área com RSRP ≥ ${fmt(dim.link.designRsrp, 1)} dBm. A fórmula da área supõe um mosaico perfeito de células; o mapa usa a forma real da zona e o diagrama das antenas.`}
         />
