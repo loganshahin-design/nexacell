@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import type L from "leaflet";
-import { zone, LatLng } from "@/data/zone";
+import type { LatLng } from "@/data/zone";
+import { useProject } from "@/hooks/useProject";
 import { BTS } from "@/types";
 import { offset } from "@/calculations/geo";
 
@@ -46,6 +47,9 @@ export default function ZoneMap(props: Props) {
   const [tilesFailed, setTilesFailed] = useState(false);
   const callbacks = useRef(props);
   callbacks.current = props;
+  const { zone } = useProject();
+  const zoneRef = useRef(zone);
+  zoneRef.current = zone;
 
   useEffect(() => {
     let alive = true;
@@ -59,7 +63,7 @@ export default function ZoneMap(props: Props) {
         doubleClickZoom: false,
         scrollWheelZoom: false,
       });
-      m.fitBounds(Leaf.polygon(zone.polygon).getBounds(), { padding: [16, 16] });
+      m.fitBounds(Leaf.polygon(zoneRef.current.polygon).getBounds(), { padding: [16, 16] });
       Leaf.control.zoom({ position: "bottomright" }).addTo(m);
       Leaf.control.scale({ imperial: false, position: "bottomleft" }).addTo(m);
       Leaf.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -90,6 +94,13 @@ export default function ZoneMap(props: Props) {
       map.current = null;
     };
   }, []);
+
+  // Ao mudar de zona, enquadra a nova zona.
+  useEffect(() => {
+    const Leaf = lib.current;
+    if (!ready || !Leaf || !map.current) return;
+    map.current.fitBounds(Leaf.polygon(zone.polygon).getBounds(), { padding: [16, 16] });
+  }, [ready, zone]);
 
   // Camada de células (mapa de calor).
   useEffect(() => {
@@ -141,7 +152,7 @@ export default function ZoneMap(props: Props) {
         fillColor: "#1d4ed8",
         fillOpacity: 1,
       })
-        .bindTooltip("Michafutene", { permanent: true, direction: "right" })
+        .bindTooltip(zone.short, { permanent: true, direction: "right" })
         .addTo(base);
     props.samples?.forEach((s) =>
       Leaf.circleMarker(s.p, {
@@ -197,6 +208,7 @@ export default function ZoneMap(props: Props) {
     });
   }, [
     ready,
+    zone,
     props.stations,
     props.sectors,
     props.sectorLength,

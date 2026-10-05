@@ -2,7 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MLMap, GeoJSONSource } from "maplibre-gl";
 import { Download } from "lucide-react";
-import { zone, LatLng } from "@/data/zone";
+import type { LatLng } from "@/data/zone";
+import { useProject } from "@/hooks/useProject";
 import { BTS } from "@/types";
 import { classes, ClassKey } from "@/calculations/coverage";
 import { centroid, offset } from "@/calculations/geo";
@@ -64,7 +65,9 @@ function labelsGeoJSON(stations: BTS[]) {
   };
 }
 
+// A zona é lida na criação do mapa; quem usa o componente dá-lhe key={zone.id}.
 export default function RealMap3D({ cells, stations }: { cells: Cell[]; stations: BTS[] }) {
+  const { zone } = useProject();
   const element = useRef<HTMLDivElement>(null);
   const map = useRef<MLMap | null>(null);
   const [ready, setReady] = useState(false);

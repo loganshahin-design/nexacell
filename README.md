@@ -27,7 +27,8 @@ O `npm install` copia automaticamente o *worker* do MapLibre para `public/maplib
 - **Apresentar** (na barra de cima): ecrã inteiro, um passo de cada vez; **→ / ←** mudam de passo, **Esc** sai.
 - **Cobertura:** três vistas — *Mapa 2D*, *Sinal em 3D* (a altura das colunas é o sinal) e *Mapa real 3D* (edifícios do OpenStreetMap; precisa de Internet). "Guardar imagem" cria um PNG para o relatório ou os diapositivos.
 - **Percurso:** "Percorrer a N1" anima o carro de medição e o gráfico ao mesmo tempo.
-- **Relatórios → Comparar cenários:** hoje contra 2030, 1800 contra 800 MHz, exterior contra dentro de casa.
+- **Relatórios → Comparar cenários:** hoje contra 2030, 1800 contra 800 MHz, exterior contra dentro de casa, e **Michafutene contra Bobole**.
+- **Escolher a zona (Zona e dados):** além de Michafutene (o projecto), há **Bobole**, uma zona rural de comparação no norte de Marracuene, ao longo da N1 (46,6 km², ≈ 11 823 hab., ambiente rural no Hata). Ao trocar, a população, o ambiente e as BTS mudam e tudo é recalculado; "Repor valores de origem" volta a Michafutene. Em Bobole bastam 3 BTS (raio 3,86 km), mas a cobertura de projecto fica em 89,7 %: a aplicação avisa e mostra onde falta sinal (com tilt de 2° ou uma 4.ª BTS passa os 95 %). Dados de Bobole: OpenStreetMap e WorldPop, consultados a 05/10/2026.
 
 Todas as animações respeitam a opção "reduzir movimento" do sistema operativo.
 

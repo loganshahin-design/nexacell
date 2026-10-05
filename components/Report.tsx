@@ -1,7 +1,6 @@
 "use client";
 import { useMemo } from "react";
-import { useProject, zoneArea } from "@/hooks/useProject";
-import { zone } from "@/data/zone";
+import { useProject } from "@/hooks/useProject";
 import { incmMarracuene4G, references, sources } from "@/data/sources";
 import { environments } from "@/data/defaults";
 import { dimension, projection, siteAreaFactor } from "@/calculations/network";
@@ -17,16 +16,16 @@ import ZoneSketch from "./ZoneSketch";
 import { fmt } from "@/utils/format";
 
 export function useConclusions() {
-  const { params: p, dim, stations } = useProject();
+  const { params: p, dim, stations, zone, zoneArea } = useProject();
   const cov = useCoverage();
   const dt = useDriveTest();
   const indoor = useMemo(
     () => (p.indoorLoss < 8 ? dimension({ ...p, indoorLoss: 12 }, zoneArea) : null),
-    [p],
+    [p, zoneArea],
   );
   const active = stations.filter((s) => s.enabled).length;
   const list = [
-    `Na zona de Michafutene (${fmt(zoneArea, 2)} km², ≈ ${fmt(p.population)} habitantes em ${p.baseYear}), a procura LTE de um operador na hora de pico passa de ${fmt(dim.now.demand)} Mbit/s (${dim.now.year}) para ${fmt(dim.traffic.demand)} Mbit/s (${dim.traffic.year}).`,
+    `Na zona de ${zone.short} (${fmt(zoneArea, 2)} km², ≈ ${fmt(p.population)} habitantes em ${p.baseYear}), a procura LTE de um operador na hora de pico passa de ${fmt(dim.now.demand)} Mbit/s (${dim.now.year}) para ${fmt(dim.traffic.demand)} Mbit/s (${dim.traffic.year}).`,
     `São precisas ${dim.required} BTS de ${p.sectors} sectores. ${dim.limiting === "capacidade" ? `A capacidade é o critério que limita: a cobertura sozinha pediria ${dim.byCoverage}.` : dim.limiting === "cobertura" ? `A cobertura é o critério que limita: a capacidade sozinha pediria ${dim.byCapacity}.` : "Os dois critérios pedem o mesmo número."}`,
     `Com ${active} BTS activas, ${fmt(cov.designCoverage, 1)} % da área cumpre o critério de projecto (meta de ${fmt(p.coverageTarget)} %) e o teste de campo previsto na N1 dá ${fmt(dt.meets, 1)} % de amostras com RSRP ≥ ${fmt(p.rsrpMin)} dBm, na mesma ordem das medições do INCM em Marracuene (98,9 % a 100 %).`,
     indoor
@@ -47,8 +46,9 @@ const limitations = [
 ];
 
 export default function Report() {
-  const { params: p, dim, stations } = useProject();
+  const { params: p, dim, stations, zone, zoneArea } = useProject();
   const { list, cov, dt } = useConclusions();
+  const main = zone.id === "michafutene";
   const l = dim.link,
     t = dim.traffic;
   const years = projection(p);
@@ -59,7 +59,7 @@ export default function Report() {
       <header className="report-cover">
         <p>Comunicações Móveis</p>
         <h1>Dimensionamento de uma rede móvel 4G LTE em Marracuene</h1>
-        <p>Zona de expansão de Michafutene – corredor da N1, Província de Maputo</p>
+        <p>{main ? "Zona de expansão de Michafutene – corredor da N1, Província de Maputo" : `${zone.name}, Província de Maputo (zona de comparação)`}</p>
         <p>Autores: {team.join(", ")}</p>
         <p>{today}</p>
       </header>
@@ -68,17 +68,29 @@ export default function Report() {
         <h2>Enquadramento do projecto</h2>
         <p>
           <strong>Objectivo.</strong> Dimensionar a rede 4G LTE de um operador para
-          servir a procura prevista em {t.year} na zona de Michafutene, cumprindo a
+          servir a procura prevista em {t.year} na zona de {zone.short}, cumprindo a
           meta do INCM de RSRP ≥ {fmt(p.rsrpMin)} dBm em {fmt(p.coverageTarget)} % da
           área.
         </p>
         <p>
           <strong>Cenário.</strong> O 4G já existe em Marracuene desde 2019 e as
-          estradas principais estão cobertas (INCM, 2023). A zona escolhida, com{" "}
-          {fmt(zoneArea, 2)} km² recortados pela fronteira real do distrito, é a
-          mais densa do distrito (≈ {fmt(p.population / zoneArea)} hab./km²) e
-          cresce {fmt(p.growth, 1)} % ao ano. O projecto é de reforço: acompanhar a
-          procura e cobrir também os bairros.
+          estradas principais estão cobertas (INCM, 2023).{" "}
+          {main ? (
+            <>
+              A zona escolhida, com {fmt(zoneArea, 2)} km² recortados pela fronteira
+              real do distrito, é a mais densa do distrito (≈{" "}
+              {fmt(p.population / zoneArea)} hab./km²) e cresce {fmt(p.growth, 1)} %
+              ao ano. O projecto é de reforço: acompanhar a procura e cobrir também os
+              bairros.
+            </>
+          ) : (
+            <>
+              Esta é uma zona de comparação, rural, com {fmt(zoneArea, 2)} km² dentro
+              da fronteira do distrito e ≈ {fmt(p.population / zoneArea)} hab./km²,
+              ao longo da N1. Serve para ver como o mesmo método decide numa zona
+              pouco densa.
+            </>
+          )}
         </p>
         <ZoneSketch label="Zona de estudo e N1" />
         <table className="data compact">
@@ -90,7 +102,7 @@ export default function Report() {
             </tr>
           </thead>
           <tbody>
-            {["ineDistrict", "ineProjection", "worldpopZone", "incmPenetration", "incmShare", "incmThresholds", "incmMarracuene", "ericsson"].map((k) => (
+            {["ineDistrict", "ineProjection", zone.sources.worldpop, "incmPenetration", "incmShare", "incmThresholds", "incmMarracuene", "ericsson"].map((k) => (
               <tr key={k}>
                 <td>{sources[k].label}</td>
                 <td>{sources[k].value}</td>

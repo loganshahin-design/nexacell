@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react";
 import { ArrowRight, MapPin, RadioTower } from "lucide-react";
 import { useProject } from "@/hooks/useProject";
-import { formatLatLng, target } from "@/data/intro";
+import { formatLatLng, targetOf } from "@/data/intro";
 import { team } from "@/components/steps/Cover";
 import { fmt } from "@/utils/format";
 import SpaceIntro from "./SpaceIntro";
@@ -57,7 +57,7 @@ const initials = (name: string) =>
     .slice(0, 2);
 
 function LoginCard({ onEnter }: { onEnter: () => void }) {
-  const { dim } = useProject();
+  const { dim, zone } = useProject();
   const reduce = useReducedMotion();
   const rise = (delay: number) =>
     reduce ? {} : { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] as const } };
@@ -97,7 +97,7 @@ function LoginCard({ onEnter }: { onEnter: () => void }) {
       </motion.p>
       <motion.p className="login-place" {...rise(1.05)}>
         <MapPin size={15} aria-hidden />
-        <Typewriter text={`Michafutene, Marracuene · ${formatLatLng(target)}`} delay={1.2} />
+        <Typewriter text={`${zone.short}, Marracuene · ${formatLatLng(targetOf(zone))}`} delay={1.2} />
       </motion.p>
       <motion.dl className="login-stats" {...rise(1.25)}>
         <div>

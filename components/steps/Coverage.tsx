@@ -1,7 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import { useProject, zoneArea } from "@/hooks/useProject";
-import { zone } from "@/data/zone";
+import { useProject } from "@/hooks/useProject";
 import { classes, coverageMap } from "@/calculations/coverage";
 import { traffic } from "@/calculations/network";
 import { Calc, Callout, Fields, Hero, Legend, Panel, Rows, Segmented } from "@/components/ui";
@@ -34,15 +33,15 @@ const RealMap3D = dynamic(() => import("@/components/map/RealMap3D"), {
 });
 
 export function useCoverage(resolution = 60) {
-  const { params, stations } = useProject();
+  const { params, stations, zone } = useProject();
   return useMemo(
     () => coverageMap(params, stations, zone.polygon, resolution),
-    [params, stations, resolution],
+    [params, stations, zone, resolution],
   );
 }
 
 export default function Coverage() {
-  const { params: p, dim, setStep, stations } = useProject();
+  const { params: p, dim, setStep, stations, zone, zoneArea } = useProject();
   const cov = useCoverage();
   const [view, setView] = useState<"classes" | "design">("classes");
   const [space, setSpace] = useState<"2d" | "3d" | "real">("2d");
@@ -127,6 +126,7 @@ export default function Coverage() {
           {space === "3d" && (
             <>
               <Zone3D
+                key={zone.id}
                 cells={cov.cells}
                 stations={stations}
                 sectors={p.sectors}
@@ -144,7 +144,7 @@ export default function Coverage() {
           )}
           {space === "real" && (
             <>
-              <RealMap3D cells={cov.cells} stations={stations} />
+              <RealMap3D key={zone.id} cells={cov.cells} stations={stations} />
               <p className="caption">
                 Mapa OpenFreeMap com os edifícios do OpenStreetMap em 3D (cerca de
                 2 900 mapeados na área). Alturas exageradas para se verem: sinal 5 m
@@ -168,7 +168,7 @@ export default function Coverage() {
               className="btn ghost"
               onClick={() =>
                 downloadCanvas(
-                  coverageImage(cov.cells, stations, "Diagrama de cobertura LTE · Michafutene (N1)"),
+                  coverageImage(cov.cells, stations, `Diagrama de cobertura LTE · ${zone.short} (N1)`),
                   "nexacell-cobertura.png",
                 )
               }

@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useProject } from "@/hooks/useProject";
-import { zone } from "@/data/zone";
 import { coverageMap } from "@/calculations/coverage";
 import { centroid } from "@/calculations/geo";
 import { Callout, Panel, Stat } from "@/components/ui";
@@ -72,11 +71,12 @@ export default function Sites() {
     removeStation,
     resetStations,
     mode,
+    zone,
   } = useProject();
   const [selected, setSelected] = useState<string | null>(null);
   const preview = useMemo(
     () => coverageMap(p, stations, zone.polygon, 30),
-    [p, stations],
+    [p, stations, zone],
   );
   const active = stations.filter((s) => s.enabled).length;
   const differs = stations.length !== dim.required;

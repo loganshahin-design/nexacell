@@ -81,6 +81,30 @@ test("ecrã de entrada: Entrar abre a aplicação e Sair volta", async ({ page }
   expect(errors).toEqual([]);
 });
 
+test("trocar de zona (Bobole) e repor volta a Michafutene", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await fresh(page);
+  const sidebar = page.locator(".decision");
+  await expect(sidebar.locator("strong")).toHaveText("10 BTS");
+  await page.getByRole("button", { name: /Zona e dados/ }).first().click();
+  await page.getByRole("radio", { name: /Bobole/ }).click();
+  await expect(page.getByText("Bobole – N1 rural (norte de Marracuene)")).toBeVisible();
+  // Zona rural: raio maior e menos BTS.
+  await expect(sidebar).toContainText("Raio 3,86 km");
+  await expect(sidebar.locator("strong")).not.toHaveText("10 BTS");
+  await page.getByRole("button", { name: /Cobertura/ }).first().click();
+  await expect(page.getByRole("heading", { level: 1, name: "Cobertura da rede" })).toBeVisible();
+  await page.getByRole("button", { name: /Relatórios/ }).first().click();
+  await page.getByRole("radio", { name: "Michafutene e Bobole" }).click();
+  await expect(page.getByRole("columnheader", { name: "Bobole (rural)" })).toBeVisible();
+  await page.getByRole("button", { name: /Repor valores de origem/ }).click();
+  await page.getByRole("button", { name: /Confirmar/ }).click();
+  await expect(sidebar.locator("strong")).toHaveText("10 BTS");
+  await expect(sidebar).toContainText("Raio 1,04 km");
+  expect(errors).toEqual([]);
+});
+
 test("modo avançado mostra mais parâmetros e as fórmulas", async ({ page }) => {
   await fresh(page);
   await page.getByRole("button", { name: "Conhecer a zona" }).click();

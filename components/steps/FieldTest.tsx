@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { Play, Square } from "lucide-react";
 import { useProject } from "@/hooks/useProject";
-import { zone } from "@/data/zone";
 import { incmMarracuene4G, sources } from "@/data/sources";
 import { classes, driveTest } from "@/calculations/coverage";
 import { routeLength } from "@/calculations/geo";
@@ -14,8 +13,8 @@ import type { MapSample } from "@/components/ZoneMap";
 import { fmt } from "@/utils/format";
 
 export function useDriveTest() {
-  const { params, stations } = useProject();
-  return useMemo(() => driveTest(params, stations, zone.route), [params, stations]);
+  const { params, stations, zone } = useProject();
+  return useMemo(() => driveTest(params, stations, zone.route), [params, stations, zone]);
 }
 
 const DRIVE_SECONDS = 8;
@@ -50,7 +49,7 @@ function useDrivePlayback(total: number) {
 }
 
 export default function FieldTest() {
-  const { params: p, stations, mode } = useProject();
+  const { params: p, stations, mode, zone } = useProject();
   const dt = useDriveTest();
   const total = dt.samples.length ? dt.samples[dt.samples.length - 1].km : 0;
   const drive = useDrivePlayback(total);
@@ -113,8 +112,8 @@ export default function FieldTest() {
             <Legend items={classes.map((c) => ({ color: c.color, label: c.label }))} />
             <p className="caption">
               {sources.incmMarracuene.source}. As rotas do INCM cobrem as
-              estradas principais de todo o distrito; a nossa só a N1 em
-              Michafutene.
+              estradas principais de todo o distrito; a nossa só a N1 em{" "}
+              {zone.short}.
             </p>
           </Panel>
           <Panel title="Resumo das amostras">

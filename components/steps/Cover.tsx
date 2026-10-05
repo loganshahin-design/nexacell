@@ -11,7 +11,7 @@ import { fmt } from "@/utils/format";
 export const team = ["Fahima Samsudin", "Muhammad Shahin", "Saudah Salim"];
 
 export default function Cover() {
-  const { setStep, params: p, stations, dim, spaceTour, setSpaceTour } = useProject();
+  const { setStep, params: p, stations, dim, spaceTour, setSpaceTour, zone } = useProject();
   const cov = useCoverage();
   const drive = useDriveTest();
   const reduce = useReducedMotion();
@@ -29,7 +29,7 @@ export default function Cover() {
     <>
       <div className="overview-intro">
         <div>
-          <p className="kicker">Michafutene · Marracuene</p>
+          <p className="kicker">{zone.short} · Marracuene</p>
           <h2>Planeie hoje a rede de {dim.traffic.year}.</h2>
           <p className="lead">Explore a procura, ajuste as estações e veja como o sinal chega à zona. Os resultados acompanham as suas alterações.</p>
         </div>
@@ -75,7 +75,7 @@ export default function Cover() {
             </div>
           }
         >
-          <Zone3D key={sceneKey} className="overview-stage" cells={cov.cells} stations={stations} sectors={p.sectors} hBeam={p.hBeam} radiusKm={dim.link.radius} samples={drive.samples} intro showExport={false} label="Vista 3D da zona de Michafutene com as BTS e o sinal previsto" />
+          <Zone3D key={`${zone.id}-${sceneKey}`} className="overview-stage" cells={cov.cells} stations={stations} sectors={p.sectors} hBeam={p.hBeam} radiusKm={dim.link.radius} samples={drive.samples} intro showExport={false} label={`Vista 3D da zona de ${zone.short} com as BTS e o sinal previsto`} />
           <p className="caption">Arraste para explorar a cena. As cores representam o sinal previsto; as torres representam as estações do projecto.</p>
         </Panel>
       </div>

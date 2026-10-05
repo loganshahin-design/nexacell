@@ -1,15 +1,17 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import type { Map as MLMap, Marker, GeoJSONSource, RasterTileSource, StyleSpecification } from "maplibre-gl";
-import { zone } from "@/data/zone";
-import { satellite, target } from "@/data/intro";
+import { satellite, targetOf } from "@/data/intro";
+import type { Zone } from "@/data/zones";
 import { bbox } from "@/calculations/geo";
 import { TURN_MS, ZOOM_MS, type EngineProps } from "./engine";
 
-const [LAT, LNG] = target;
-const ring = zone.polygon.map(([la, ln]) => [ln, la]);
-const closedRing = [...ring, ring[0]];
-const route = zone.route.map(([la, ln]) => [ln, la]);
+// Destino, contorno e N1 da zona, em [lng, lat] (como o MapLibre usa).
+function geoOf(zone: Zone) {
+  const [LAT, LNG] = targetOf(zone);
+  const ring = zone.polygon.map(([la, ln]) => [ln, la]);
+  return { LAT, LNG, closedRing: [...ring, ring[0]], route: zone.route.map(([la, ln]) => [ln, la]) };
+}
 
 // Estilo próprio: só imagens de satélite. Usa o Esri (mais rápido e nítido);
 // se der erros, os mesmos mosaicos passam a vir do EOX (Sentinel-2).
@@ -51,8 +53,8 @@ function loginPadding(el: HTMLElement) {
 
 const noPadding = { left: 0, right: 0, top: 0, bottom: 0 };
 
-// Endereços dos mosaicos à volta de Michafutene em cada nível de zoom.
-function descentTiles() {
+// Endereços dos mosaicos à volta do destino em cada nível de zoom.
+function descentTiles(LAT: number, LNG: number) {
   const tile = (z: number) => {
     const n = 2 ** z;
     const x = Math.floor(((LNG + 180) / 360) * n);
@@ -86,8 +88,11 @@ function altitudeKm(m: MLMap) {
   return (dist * Math.cos((m.getPitch() * Math.PI) / 180)) / 1000;
 }
 
+// A zona é fixa durante a vida do globo (o SpaceIntro dá-lhe key={zone.id}).
 export default function GlobeMap(props: EngineProps) {
-  const { phase, reduce, layout } = props;
+  const { phase, reduce, layout, zone } = props;
+  const [geo] = useState(() => geoOf(zone));
+  const { LAT, LNG, closedRing, route } = geo;
   const element = useRef<HTMLDivElement>(null);
   const map = useRef<MLMap | null>(null);
   const lib = useRef<typeof import("maplibre-gl") | null>(null);
@@ -199,7 +204,7 @@ export default function GlobeMap(props: EngineProps) {
   useEffect(() => {
     if (!loaded) return;
     const abort = new AbortController();
-    const urls = descentTiles();
+    const urls = descentTiles(LAT, LNG);
     let i = 0;
     const next = (): Promise<void> | undefined => {
       const url = urls[i++];

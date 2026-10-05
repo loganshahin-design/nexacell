@@ -1,5 +1,6 @@
 import type { LatLng } from "@/data/zone";
 import type { BTS } from "@/types";
+import type { Zone } from "@/data/zones";
 
 // orbit: a Terra roda (ecrã de entrada) · zoom: descida até Michafutene ·
 // arrive: chegada, mostra a zona · out: a sair para a aplicação.
@@ -14,6 +15,7 @@ export type EngineProps = {
   // login: a Terra fica ao lado do cartão de entrada; center: ao centro.
   layout: "login" | "center";
   stations: BTS[];
+  zone: Zone; // zona de destino (fixa durante a vida do globo)
   onTelemetry: (t: Telemetry) => void;
   onReady: () => void;
   onArrive: () => void;

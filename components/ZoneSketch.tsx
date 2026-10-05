@@ -1,4 +1,6 @@
-import { zone, LatLng } from "@/data/zone";
+"use client";
+import type { LatLng } from "@/data/zone";
+import { useProject } from "@/hooks/useProject";
 import { bbox } from "@/calculations/geo";
 import { BTS } from "@/types";
 
@@ -14,6 +16,7 @@ export default function ZoneSketch({
   samples?: { p: LatLng; color: string }[];
   label: string;
 }) {
+  const { zone } = useProject();
   const [sw, ne] = bbox(zone.polygon);
   const k = Math.cos((sw[0] * Math.PI) / 180);
   const W = 400;

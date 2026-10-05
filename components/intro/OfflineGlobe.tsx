@@ -3,10 +3,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Stars } from "@react-three/drei";
 import * as THREE from "three";
-import { target } from "@/data/intro";
+import { targetOf } from "@/data/intro";
 import { TURN_MS, ZOOM_MS, type EngineProps } from "./engine";
 
-const [LAT, LNG] = target;
 const EARTH_KM = 6371;
 const START = 3.4; // distância inicial da câmara (raios terrestres)
 const END = 1.0025; // ≈ 16 km de altitude
@@ -32,7 +31,7 @@ function Earth({ texture, ...props }: EngineProps & { texture: THREE.Texture }) 
   const { camera, size } = useThree();
   const cb = useRef(props);
   cb.current = props;
-  const point = useMemo(() => toVec(LAT, LNG), []);
+  const point = useMemo(() => { const [LAT, LNG] = targetOf(props.zone); return toVec(LAT, LNG); }, [props.zone]);
   // Rotação que põe Michafutene virada para a câmara.
   const aim = useMemo(() => ({ y: -Math.atan2(point.x, point.z), x: Math.atan2(point.y, Math.hypot(point.x, point.z)) }), [point]);
   // No ecrã de entrada a Terra fica mais longe e ao lado do cartão (como no globo online).

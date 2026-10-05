@@ -1,6 +1,6 @@
 "use client";
 import { useMemo } from "react";
-import { useProject, zoneArea } from "@/hooks/useProject";
+import { useProject } from "@/hooks/useProject";
 import { dimension, siteAreaFactor } from "@/calculations/network";
 import {
   environmentCorrection,
@@ -60,12 +60,12 @@ export function DecisionCard() {
 }
 
 export default function ServiceArea() {
-  const { params: p, dim, setParam, mode } = useProject();
+  const { params: p, dim, setParam, mode, zoneArea } = useProject();
   const l = dim.link;
   const fsplRadius = 10 ** ((l.mapl - 32.44 - 20 * Math.log10(p.frequency)) / 20);
   const indoor = useMemo(
     () => (p.indoorLoss >= 8 ? null : dimension({ ...p, indoorLoss: 12 }, zoneArea)),
-    [p],
+    [p, zoneArea],
   );
   const K = siteAreaFactor(p.sectors);
   const hataBase =

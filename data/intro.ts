@@ -1,8 +1,10 @@
 import { centroid } from "@/calculations/geo";
 import { zone, type LatLng } from "./zone";
+import type { Zone } from "./zones";
 
 // Centro da zona de estudo: o ponto onde termina o voo do espaço.
-export const target: LatLng = centroid(zone.polygon);
+export const targetOf = (z: Zone): LatLng => centroid(z.polygon);
+export const target: LatLng = targetOf(zone);
 
 // Etapas mostradas durante a descida, da mais alta para a mais baixa.
 // `above`: altitude aproximada (km) a partir da qual a etapa é mostrada.
@@ -15,9 +17,15 @@ export const waypoints = [
   { above: 0, name: "Michafutene", note: "Corredor da N1 · a nossa zona" },
 ] as const;
 
-export function waypointIndex(altitudeKm: number) {
-  const i = waypoints.findIndex((w) => altitudeKm >= w.above);
-  return i === -1 ? waypoints.length - 1 : i;
+// As mesmas etapas, com a última a ser a zona escolhida.
+export function waypointsFor(z: Zone): readonly { above: number; name: string; note: string }[] {
+  const last = z.id === "michafutene" ? waypoints[waypoints.length - 1] : { above: 0, name: z.short, note: "N1 rural · zona de comparação" };
+  return [...waypoints.slice(0, -1), last];
+}
+
+export function waypointIndex(altitudeKm: number, list: readonly { above: number }[] = waypoints) {
+  const i = list.findIndex((w) => altitudeKm >= w.above);
+  return i === -1 ? list.length - 1 : i;
 }
 
 // Coordenadas no formato usado no projecto: "25,79° S · 32,59° E".

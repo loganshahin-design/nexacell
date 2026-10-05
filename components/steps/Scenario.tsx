@@ -1,10 +1,9 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useProject, zoneArea } from "@/hooks/useProject";
-import { zone } from "@/data/zone";
+import { useProject } from "@/hooks/useProject";
 import { sources } from "@/data/sources";
-import { zonePopulation2020, zonePopulation2025 } from "@/data/defaults";
-import { routeLength } from "@/calculations/geo";
+import { POP_FACTOR_2020, POP_GROWTH_2025, calibrate, zoneList } from "@/data/zones";
+import { polygonArea, routeLength } from "@/calculations/geo";
 import { Calc, Callout, OriginBadge, Panel, Stat } from "@/components/ui";
 import Equation, { mathNumber as n } from "@/components/Equation";
 import { fmt } from "@/utils/format";
@@ -17,10 +16,9 @@ export const ZoneMap = dynamic(() => import("@/components/ZoneMap"), {
 // INE: 305 216 hab. (2025) em 734 km².
 const districtDensity = 305216 / 734;
 
-const realKeys = [
+const commonKeys = [
   "ineDistrict",
   "ineProjection",
-  "worldpopZone",
   "incmPenetration",
   "incmShare",
   "incmThresholds",
@@ -29,15 +27,50 @@ const realKeys = [
   "tmcel4g",
   "ericsson",
   "osmDistrict",
-  "osmMichafutene",
-  "osmN1",
 ];
 
+// Escolha da zona de estudo: Michafutene (o projecto) ou uma zona de comparação.
+function ZoneChooser() {
+  const { zone, setZone } = useProject();
+  return (
+    <Panel title="Zona de estudo">
+      <div className="choice-row" role="radiogroup" aria-label="Zona de estudo">
+        {zoneList.map((z) => {
+          const area = polygonArea(z.polygon);
+          return (
+            <button
+              key={z.id}
+              role="radio"
+              aria-checked={zone.id === z.id}
+              className={`choice ${zone.id === z.id ? "on" : ""}`}
+              onClick={() => zone.id !== z.id && setZone(z.id)}
+            >
+              <strong>{z.short}</strong>
+              <small>
+                {z.kind} · {fmt(area, 1)} km² · {fmt(calibrate(z.worldpop2020))} hab.
+              </small>
+            </button>
+          );
+        })}
+      </div>
+      <p className="field-help">
+        Ao mudar de zona, a população e o ambiente (Hata) passam a ser os da nova
+        zona e as BTS são recolocadas automaticamente. Os outros parâmetros não
+        mudam. "Repor valores de origem" (Relatórios) volta a Michafutene.
+      </p>
+    </Panel>
+  );
+}
+
 export default function Scenario() {
-  const { params } = useProject();
+  const { params, zone, zoneArea } = useProject();
   const density = params.population / zoneArea;
+  const ctx = { density, districtDensity, year: params.baseYear + params.horizon };
+  const realKeys = [...commonKeys.slice(0, 2), zone.sources.worldpop, ...commonKeys.slice(2), zone.sources.landmark, zone.sources.route];
+  const pop2020 = zone.worldpop2020 * POP_FACTOR_2020;
   return (
     <>
+      <ZoneChooser />
       <div className="grid-2">
         <div className="stack">
           <Panel title="A zona escolhida">
@@ -52,48 +85,30 @@ export default function Scenario() {
           </Panel>
           <Panel title="Porquê esta zona">
             <ul className="reasons">
-              <li>
-                <strong>Cresce muito depressa.</strong> O distrito passou de 254 139
-                habitantes em 2020 para 305 216 em 2025 (+3,7 % ao ano, INE).
-              </li>
-              <li>
-                <strong>É a parte mais densa do distrito.</strong> Encostada à
-                cidade de Maputo e atravessada pela N1, tem cerca de{" "}
-                {fmt(density)} hab./km², cerca de {fmt(density / districtDensity)}{" "}
-                vezes a média do distrito ({fmt(districtDensity)} hab./km² em 2025).
-              </li>
-              <li>
-                <strong>O 4G já existe, mas a procura vai duplicar.</strong> O
-                desafio não é levar rede a quem não tem: é garantir capacidade e
-                cobertura para a população e o consumo de dados de{" "}
-                {params.baseYear + params.horizon}.
-              </li>
+              {zone.reasons.map((r) => (
+                <li key={r.title}>
+                  <strong>{r.title}</strong> {r.text(ctx)}
+                </li>
+              ))}
             </ul>
           </Panel>
         </div>
         <Panel title="Mapa da zona" aside={<OriginBadge origin="REAL" source="osmDistrict" />}>
-          <ZoneMap showRoute showLandmark tall label="Mapa da zona de estudo em Michafutene" />
+          <ZoneMap showRoute showLandmark tall label={`Mapa da zona de estudo em ${zone.short}`} />
           <p className="caption">
-            Tracejado azul: zona de estudo (recortada pela fronteira real do
-            distrito). Linha escura: N1. Fonte: OpenStreetMap.
+            Tracejado azul: zona de estudo (dentro da fronteira real do distrito).
+            Linha escura: N1. Fonte: OpenStreetMap.
           </p>
         </Panel>
       </div>
 
-      <Callout title="Uma rede preparada para crescer">
-        Marracuene já dispõe de cobertura móvel. O 4G chegou ao distrito
-        em 2019 (1.ª fase da Tmcel), e as medições do INCM em Junho de 2023
-        mostram RSRP ≥ −105 dBm em 98,9 % (Tmcel) a 100 % (Vodacom e Movitel)
-        das estradas principais. Este projecto é de <strong>reforço</strong>:
-        acompanhar o crescimento da procura e cobrir também os bairros fora das
-        estradas.
-      </Callout>
+      <Callout title={zone.context.title}>{zone.context.text}</Callout>
 
       <Panel title="Objectivo do projecto">
         <p className="objective">
           Dimensionar a rede 4G LTE de um operador para servir a procura prevista
-          em <strong>{params.baseYear + params.horizon}</strong> na zona de
-          Michafutene, cumprindo a meta do INCM:{" "}
+          em <strong>{params.baseYear + params.horizon}</strong> na zona de{" "}
+          {zone.short}, cumprindo a meta do INCM:{" "}
           <strong>RSRP ≥ −105 dBm em {params.coverageTarget} % da área</strong>.
         </p>
       </Panel>
@@ -139,8 +154,8 @@ export default function Scenario() {
         </p>
         <Equation
           formula={String.raw`P_{2025} = P_{\mathrm{WorldPop}} \times \frac{P_{\mathrm{INE},2020}}{P_{\mathrm{WorldPop,distrito}}} \times \frac{P_{\mathrm{INE},2025}}{P_{\mathrm{INE},2020}}`}
-          substitution={String.raw`P_{2025} = 38\,632 \times \frac{254\,139}{286\,324} \times \frac{305\,216}{254\,139} = ${n(zonePopulation2020, 0)} \times ${n(305216 / 254139, 3)}`}
-          result={`${fmt(zonePopulation2025)} habitantes`}
+          substitution={String.raw`P_{2025} = ${n(zone.worldpop2020, 0)} \times \frac{254\,139}{286\,324} \times \frac{305\,216}{254\,139} = ${n(pop2020, 0)} \times ${n(POP_GROWTH_2025, 3)}`}
+          result={`${fmt(calibrate(zone.worldpop2020))} habitantes`}
           note="Estimativa calculada a partir de dados do WorldPop e de projecções do INE; não corresponde a uma contagem directa."
         />
       </Calc>

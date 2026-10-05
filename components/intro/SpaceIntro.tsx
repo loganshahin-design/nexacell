@@ -3,9 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { SkipForward } from "lucide-react";
-import { useProject, zoneArea } from "@/hooks/useProject";
-import { zone } from "@/data/zone";
-import { formatAltitude, formatLatLng, target, waypointIndex, waypoints } from "@/data/intro";
+import { useProject } from "@/hooks/useProject";
+import { formatAltitude, formatLatLng, targetOf, waypointIndex, waypointsFor } from "@/data/intro";
 import { routeLength } from "@/calculations/geo";
 import { fmt } from "@/utils/format";
 import Starfield from "./Starfield";
@@ -29,7 +28,9 @@ export default function SpaceIntro({
   // Cartão do ecrã de entrada; recebe a função que inicia a viagem.
   renderCard?: (start: () => void) => React.ReactNode;
 }) {
-  const { stations, params, dim } = useProject();
+  const { stations, params, dim, zone, zoneArea } = useProject();
+  const target = targetOf(zone);
+  const waypoints = waypointsFor(zone);
   const reduce = !!useReducedMotion();
   const [engine, setEngine] = useState<Engine | null>(null);
   const [phase, setPhase] = useState<Phase>("orbit");
@@ -85,6 +86,7 @@ export default function SpaceIntro({
     reduce,
     layout: mode === "login" ? "login" : "center",
     stations,
+    zone,
     onTelemetry: setTel,
     onReady: () => setReady(true),
     onArrive: () => setPhase("arrive"),
@@ -95,7 +97,7 @@ export default function SpaceIntro({
   };
 
   const travelling = phase === "zoom" || phase === "arrive";
-  const wp = waypointIndex(tel.altitudeKm);
+  const wp = waypointIndex(tel.altitudeKm, waypoints);
   // Globo offline: um clarão esconde a textura desfocada nos últimos quilómetros.
   const flash = engine === "offline" ? Math.min(1, Math.max(0, (260 - tel.altitudeKm) / 240)) : 0;
 
@@ -103,14 +105,14 @@ export default function SpaceIntro({
     <motion.div
       className={`intro ${mode}`}
       role="region"
-      aria-label={mode === "login" ? "Entrada do NexaCell" : "Voo do espaço até Michafutene"}
+      aria-label={mode === "login" ? "Entrada do NexaCell" : `Voo do espaço até ${zone.short}`}
       initial={{ opacity: mode === "replay" ? 0 : 1 }}
       animate={{ opacity: leaving ? 0 : 1 }}
       transition={{ duration: leaving ? 0.9 : 0.5 }}
     >
       {engine !== "offline" && <Starfield reduce={reduce} />}
-      {engine === "online" && <GlobeMap key="online" {...engineProps} />}
-      {engine === "offline" && <OfflineGlobe key="offline" {...engineProps} />}
+      {engine === "online" && <GlobeMap key={`online-${zone.id}`} {...engineProps} />}
+      {engine === "offline" && <OfflineGlobe key={`offline-${zone.id}`} {...engineProps} />}
       <div className="intro-vignette" aria-hidden />
       {flash > 0 && <div className="intro-flash" style={{ opacity: flash }} aria-hidden />}
 

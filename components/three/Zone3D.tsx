@@ -5,7 +5,7 @@ import { Line, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { useReducedMotion } from "motion/react";
 import { Download, RotateCcw } from "lucide-react";
-import { zone, LatLng } from "@/data/zone";
+import { zone as defaultZone, type LatLng } from "@/data/zone";
 import { BTS } from "@/types";
 import { classes, classify, ClassKey } from "@/calculations/coverage";
 import { bbox, centroid } from "@/calculations/geo";
@@ -17,13 +17,21 @@ export type Cell3D = { p: LatLng; dLat: number; dLng: number; rsrp: number; cls:
 export type Sample3D = { p: LatLng; km: number; rsrp: number };
 
 // Coordenadas de cena: origem no centro da zona, 1 km = 10 unidades, norte = −z.
+// A geometria depende da zona activa: o Zone3D actualiza-a ao renderizar e quem
+// o usa dá-lhe key={zone.id}, para a cena ser recriada ao mudar de zona.
 const S = 10;
-const origin = centroid(zone.polygon);
-const KX = 111.32 * Math.cos((origin[0] * Math.PI) / 180);
 const KZ = 110.574;
+const GEO = { polygon: [] as LatLng[], origin: [0, 0] as LatLng, KX: 1, SW: [0, 0] as LatLng };
+function setGeo(polygon: LatLng[]) {
+  GEO.polygon = polygon;
+  GEO.origin = centroid(polygon);
+  GEO.KX = 111.32 * Math.cos((GEO.origin[0] * Math.PI) / 180);
+  GEO.SW = bbox(polygon)[0];
+}
+setGeo(defaultZone.polygon);
 const toXZ = (p: LatLng): [number, number] => [
-  (p[1] - origin[1]) * KX * S,
-  -(p[0] - origin[0]) * KZ * S,
+  (p[1] - GEO.origin[1]) * GEO.KX * S,
+  -(p[0] - GEO.origin[0]) * KZ * S,
 ];
 const MAST = 7.5;
 const FLAT = 0.12;
@@ -31,9 +39,8 @@ const heightOf = (rsrp: number) =>
   0.3 + ((Math.min(Math.max(rsrp, -105), -55) + 105) / 50) * 5.2;
 const classColor = Object.fromEntries(classes.map((c) => [c.key, c.color])) as Record<ClassKey, string>;
 // Índice da célula da grelha (a mesma de gridInside) que contém o ponto.
-const [SW] = bbox(zone.polygon);
 const cellKey = (p: LatLng, dLat: number, dLng: number) =>
-  `${Math.floor((p[0] - SW[0]) / dLat)}:${Math.floor((p[1] - SW[1]) / dLng)}`;
+  `${Math.floor((p[0] - GEO.SW[0]) / dLat)}:${Math.floor((p[1] - GEO.SW[1]) / dLng)}`;
 
 function useTokens() {
   const { theme } = useProject();
@@ -61,11 +68,11 @@ type Layers = { relief: boolean; sectors: boolean; waves: boolean; drive: boolea
 
 function Ground({ color, line }: { color: string; line: string }) {
   const shape = useMemo(
-    () => new THREE.Shape(zone.polygon.map((p) => { const [x, z] = toXZ(p); return new THREE.Vector2(x, -z); })),
+    () => new THREE.Shape(GEO.polygon.map((p) => { const [x, z] = toXZ(p); return new THREE.Vector2(x, -z); })),
     [],
   );
   const outline = useMemo(() => {
-    const pts = zone.polygon.map((p) => { const [x, z] = toXZ(p); return new THREE.Vector3(x, 0.05, z); });
+    const pts = GEO.polygon.map((p) => { const [x, z] = toXZ(p); return new THREE.Vector3(x, 0.05, z); });
     return [...pts, pts[0]];
   }, []);
   return (
@@ -85,7 +92,7 @@ function SignalColumns({ cells, relief, reduce, mixRef }: { cells: Cell3D[]; rel
   const invalidate = useThree((s) => s.invalidate);
   const heights = useMemo(() => cells.map((c) => heightOf(c.rsrp)), [cells]);
   const dims = useMemo(
-    () => cells.map((c) => [c.dLng * KX * S * 0.9, c.dLat * KZ * S * 0.9] as const),
+    () => cells.map((c) => [c.dLng * GEO.KX * S * 0.9, c.dLat * KZ * S * 0.9] as const),
     [cells],
   );
   const place = (mix: number) => {
@@ -324,6 +331,8 @@ export default function Zone3D({
   label?: string;
   showExport?: boolean;
 }) {
+  const { zone } = useProject();
+  if (GEO.polygon !== zone.polygon) setGeo(zone.polygon);
   const reduce = !!useReducedMotion();
   const colors = useTokens();
   const [gl, setGl] = useState<boolean | null>(null);

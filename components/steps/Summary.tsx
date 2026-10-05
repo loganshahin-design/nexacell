@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Download, Printer, RotateCcw } from "lucide-react";
 import { useProject } from "@/hooks/useProject";
-import { zone } from "@/data/zone";
 import Report, { useConclusions } from "@/components/Report";
 import { Callout, Hero, Panel, Stat } from "@/components/ui";
 import { DecisionCard } from "./ServiceArea";
@@ -10,13 +9,13 @@ import Compare from "@/components/Compare";
 import { fmt } from "@/utils/format";
 
 export default function Summary() {
-  const { params: p, dim, stations, resetAll } = useProject();
+  const { params: p, dim, stations, resetAll, zone } = useProject();
   const { list, cov, dt } = useConclusions();
   const [confirm, setConfirm] = useState(false);
   const ok = cov.designCoverage >= p.coverageTarget;
   function exportJson() {
     const blob = new Blob(
-      [JSON.stringify({ zone, params: p, stations, result: { required: dim.required, radius: dim.link.radius, demand: dim.traffic.demand, coverage: cov.designCoverage } }, null, 2)],
+      [JSON.stringify({ zone: { id: zone.id, name: zone.name, polygon: zone.polygon, route: zone.route }, params: p, stations, result: { required: dim.required, radius: dim.link.radius, demand: dim.traffic.demand, coverage: cov.designCoverage } }, null, 2)],
       { type: "application/json" },
     );
     const url = URL.createObjectURL(blob);

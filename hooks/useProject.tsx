@@ -9,16 +9,17 @@ import {
   useState,
 } from "react";
 import { defaults, fields } from "@/data/defaults";
-import { zone } from "@/data/zone";
+import { DEFAULT_ZONE, calibrate, zones, type ZoneId } from "@/data/zones";
 import { BTS, Mode, Params } from "@/types";
 import { dimension } from "@/calculations/network";
 import { polygonArea } from "@/calculations/geo";
 import { autoPlace, nextId } from "@/calculations/placement";
 
 const STORAGE_KEY = "nexacell-v2";
-export const zoneArea = polygonArea(zone.polygon);
 
 type Stored = {
+  // Zona de estudo activa (Michafutene por omissão).
+  zoneId: ZoneId;
   params: Params;
   // null = colocação automática com o nº de BTS dimensionado.
   stations: BTS[] | null;
@@ -28,6 +29,7 @@ type Stored = {
 };
 
 const initial: Stored = {
+  zoneId: DEFAULT_ZONE,
   params: defaults,
   stations: null,
   mode: "basico",
@@ -50,6 +52,7 @@ function restore(raw: string | null): Stored {
     Number.isFinite(b.azimuth) &&
     typeof b.enabled === "boolean";
   return {
+    zoneId: data?.zoneId in zones ? data.zoneId : DEFAULT_ZONE,
     params,
     stations:
       Array.isArray(data?.stations) && data.stations.every(valid)
@@ -99,10 +102,12 @@ function useProjectState() {
   }, [state, loaded]);
 
   const { params } = state;
-  const dim = useMemo(() => dimension(params, zoneArea), [params]);
+  const zone = zones[state.zoneId];
+  const zoneArea = useMemo(() => polygonArea(zone.polygon), [zone]);
+  const dim = useMemo(() => dimension(params, zoneArea), [params, zoneArea]);
   const automatic = useMemo(
     () => autoPlace(zone.polygon, dim.required),
-    [dim.required],
+    [zone, dim.required],
   );
   const stations = state.stations ?? automatic;
 
@@ -128,6 +133,16 @@ function useProjectState() {
     setEntered,
     spaceTour,
     setSpaceTour,
+    zone,
+    zoneArea,
+    // Muda de zona: população e ambiente da nova zona, BTS recolocadas.
+    setZone: (id: ZoneId) =>
+      setState((s) => ({
+        ...s,
+        zoneId: id,
+        params: { ...s.params, population: calibrate(zones[id].worldpop2020), environment: zones[id].environment },
+        stations: null,
+      })),
     dim,
     stations,
     isAutomatic: state.stations === null,
