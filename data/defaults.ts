@@ -443,7 +443,7 @@ export const fields: Record<Exclude<keyof Params, "environment">, Field> = {
     step: 1,
     origin: "REAL",
     source: "incmThresholds",
-    help: "Meta do INCM: 95 % das amostras com RSRP ≥ −105 dBm.",
+    help: "Meta do INCM: 95 % das amostras com RSRP ≥ −105 dBm. Aqui conta a área com RSRP ≥ RSRP de projecto; subir a meta pode exigir mais BTS (verificação no mapa).",
   },
 };
 

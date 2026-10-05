@@ -23,6 +23,8 @@ import { antennaParameters, gainFromBeams, patternLoss } from "./antenna";
 import { polygonArea, pointInPolygon, routeLength } from "./geo";
 import { autoPlace } from "./placement";
 import { coverageMap, classify, driveTest } from "./coverage";
+import { dimensionWithMap } from "./dimension";
+import { zones, calibrate } from "../data/zones";
 import { defaults } from "../data/defaults";
 import { zone } from "../data/zone";
 
@@ -154,4 +156,25 @@ test("cobertura e drive test", () => {
   const dt = driveTest(defaults, sites, zone.route);
   assert.ok(dt.samples.length > 100);
   close(Object.values(dt.share).reduce((a, b) => a + b, 0), 100, 1e-9);
+});
+
+test("verificação no mapa: a meta de cobertura entra no nº de BTS", () => {
+  const area = polygonArea(zone.polygon);
+  const base = dimensionWithMap(defaults, zone.polygon, area);
+  // Michafutene: a fórmula pede 7, o mapa 9 para 95 %, mas a capacidade (10) decide.
+  assert.equal(base.byCoverage, 7);
+  assert.equal(base.byMap, 9);
+  assert.equal(base.required, 10);
+  assert.equal(base.limiting, "capacidade");
+  // Meta de 100 %: são precisas 14 BTS e passa a decidir a cobertura.
+  const full = dimensionWithMap({ ...defaults, coverageTarget: 100 }, zone.polygon, area);
+  assert.equal(full.required, 14);
+  assert.equal(full.limiting, "cobertura");
+  // Bobole (rural): a fórmula pede 2, a capacidade 3, o mapa 4.
+  const b = zones.bobole;
+  const rural = dimensionWithMap({ ...defaults, population: calibrate(b.worldpop2020), environment: b.environment }, b.polygon, polygonArea(b.polygon));
+  assert.equal(rural.byCapacity, 3);
+  assert.equal(rural.byMap, 4);
+  assert.equal(rural.required, 4);
+  assert.equal(rural.limiting, "cobertura");
 });

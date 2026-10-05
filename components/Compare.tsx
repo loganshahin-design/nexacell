@@ -4,7 +4,7 @@ import { useProject } from "@/hooks/useProject";
 import { calibrate, zones, type Zone, type ZoneId } from "@/data/zones";
 import { polygonArea } from "@/calculations/geo";
 import { Params } from "@/types";
-import { dimension } from "@/calculations/network";
+import { dimensionWithMap } from "@/calculations/dimension";
 import { autoPlace } from "@/calculations/placement";
 import { coverageMap } from "@/calculations/coverage";
 import { Panel, Segmented } from "@/components/ui";
@@ -53,9 +53,9 @@ const presets: Preset[] = [
 
 function scenario(p: Params, zone: Zone) {
   const area = polygonArea(zone.polygon);
-  const d = dimension(p, area);
-  // Cobertura com as BTS dimensionadas, colocadas automaticamente (grelha mais leve).
-  const cov = coverageMap(p, autoPlace(zone.polygon, d.required), zone.polygon, 36);
+  const d = dimensionWithMap(p, zone.polygon, area);
+  // Cobertura com as BTS dimensionadas, colocadas automaticamente.
+  const cov = coverageMap(p, autoPlace(zone.polygon, d.required), zone.polygon, 60);
   return { d, cov, area };
 }
 
@@ -81,7 +81,8 @@ export default function Compare() {
     ["Procura na hora de pico", A.d.traffic.demand, B.d.traffic.demand, 0, "Mbit/s", true],
     ["Raio da célula", A.d.link.radius, B.d.link.radius, 2, "km", false],
     ["BTS pela capacidade", A.d.byCapacity, B.d.byCapacity, 0, "", true],
-    ["BTS pela cobertura", A.d.byCoverage, B.d.byCoverage, 0, "", true],
+    ["BTS pela cobertura (fórmula)", A.d.byCoverage, B.d.byCoverage, 0, "", true],
+    ["BTS pela cobertura (mapa, meta)", A.d.byMap, B.d.byMap, 0, "", true],
     ["BTS necessárias", A.d.required, B.d.required, 0, "", true],
     ["Cobertura prevista (projecto)", A.cov.designCoverage, B.cov.designCoverage, 1, "%", false],
   ];
@@ -92,7 +93,7 @@ export default function Compare() {
         ? `A 800 MHz o raio passa de ${fmt(A.d.link.radius, 2)} para ${fmt(B.d.link.radius, 2)} km, mas com 10 MHz a capacidade por BTS cai para metade (${B.d.byCapacity} BTS pela capacidade). Por isso é comum usar as duas: a banda baixa para cobrir, 1800 MHz para capacidade.`
         : key === "interior"
           ? `Exigir o sinal dentro de casa faz o raio cair de ${fmt(A.d.link.radius, 2)} para ${fmt(B.d.link.radius, 2)} km e as BTS pela cobertura subir de ${A.d.byCoverage} para ${B.d.byCoverage}.`
-          : `Em Bobole (rural) cada célula chega a ${fmt(B.d.link.radius, 2)} km, contra ${fmt(A.d.link.radius, 2)} km em Michafutene, e bastam ${B.d.required} BTS para uma área ${fmt(B.area / A.area, 1)} vezes maior. Com as BTS colocadas automaticamente, a cobertura de projecto em Bobole fica em ${fmt(B.cov.designCoverage, 1)} %: a conta da área é optimista e o mapa mostra onde falta sinal.`;
+          : `Em Bobole (rural) cada célula chega a ${fmt(B.d.link.radius, 2)} km, contra ${fmt(A.d.link.radius, 2)} km em Michafutene, e ${B.d.required} BTS cobrem uma área ${fmt(B.area / A.area, 1)} vezes maior. Em Michafutene decide a ${A.d.limiting === "capacidade" ? "capacidade" : "cobertura"} (muita gente); em Bobole decide a ${B.d.limiting === "capacidade" ? "capacidade" : "cobertura"}: a fórmula pede ${B.d.byCoverage}, mas o mapa mostra que são precisas ${B.d.byMap} para cumprir a meta.`;
   return (
     <Panel
       title="Comparar cenários"

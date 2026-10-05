@@ -26,7 +26,7 @@ export function useConclusions() {
   const active = stations.filter((s) => s.enabled).length;
   const list = [
     `Na zona de ${zone.short} (${fmt(zoneArea, 2)} km², ≈ ${fmt(p.population)} habitantes em ${p.baseYear}), a procura LTE de um operador na hora de pico passa de ${fmt(dim.now.demand)} Mbit/s (${dim.now.year}) para ${fmt(dim.traffic.demand)} Mbit/s (${dim.traffic.year}).`,
-    `São precisas ${dim.required} BTS de ${p.sectors} sectores. ${dim.limiting === "capacidade" ? `A capacidade é o critério que limita: a cobertura sozinha pediria ${dim.byCoverage}.` : dim.limiting === "cobertura" ? `A cobertura é o critério que limita: a capacidade sozinha pediria ${dim.byCapacity}.` : "Os dois critérios pedem o mesmo número."}`,
+    `São precisas ${dim.required} BTS de ${p.sectors} sectores. ${dim.limiting === "capacidade" ? `A capacidade é o critério que limita: a cobertura sozinha pediria ${dim.byCoverage} pela fórmula da área e ${dim.byMap} verificando a meta de ${fmt(p.coverageTarget)} % no mapa.` : dim.limiting === "cobertura" ? `A cobertura é o critério que limita: a capacidade sozinha pediria ${dim.byCapacity}; a fórmula da área dá ${dim.byCoverage}, mas no mapa só com ${dim.byMap} se cumpre a meta de ${fmt(p.coverageTarget)} %.` : "Os critérios pedem o mesmo número."}`,
     `Com ${active} BTS activas, ${fmt(cov.designCoverage, 1)} % da área cumpre o critério de projecto (meta de ${fmt(p.coverageTarget)} %) e o teste de campo previsto na N1 dá ${fmt(dt.meets, 1)} % de amostras com RSRP ≥ ${fmt(p.rsrpMin)} dBm, na mesma ordem das medições do INCM em Marracuene (98,9 % a 100 %).`,
     indoor
       ? `Para garantir o mesmo sinal dentro das casas (12 dB de paredes), seriam precisas ${indoor.byCoverage} BTS a ${fmt(p.frequency)} MHz. Recomenda-se uma camada em banda baixa (800/900 MHz) para a cobertura interior.`
@@ -152,7 +152,8 @@ export default function Report() {
             <tr><td><strong>Raio da célula</strong></td><td><strong>{fmt(l.radius, 3)} km</strong></td></tr>
             <tr><td>Área por BTS</td><td>{fmt(siteAreaFactor(p.sectors), 2)} × R² = {fmt(dim.siteArea, 2)} km²</td></tr>
             <tr><td><strong>BTS por cobertura</strong></td><td><strong>{dim.byCoverage}</strong> ({fmt(zoneArea, 2)} ÷ {fmt(dim.siteArea, 2)})</td></tr>
-            <tr><td><strong>Decisão</strong></td><td><strong>max({dim.byCapacity}, {dim.byCoverage}) = {dim.required} BTS</strong> (limita a {dim.limiting})</td></tr>
+            <tr><td>Verificação no mapa (meta {fmt(p.coverageTarget)} %)</td><td>{dim.byMap} BTS colocadas automaticamente</td></tr>
+            <tr><td><strong>Decisão</strong></td><td><strong>max({dim.byCapacity}, {dim.byCoverage}, {dim.byMap}) = {dim.required} BTS</strong> (limita a {dim.limiting})</td></tr>
           </tbody>
         </table>
 

@@ -5,7 +5,19 @@ import { centroid, distance, gridInside } from "./geo";
 // Distribui `count` BTS uniformemente dentro do polígono:
 // 1) escolha inicial pelo ponto mais afastado (determinística);
 // 2) iterações de Lloyd: cada BTS vai para o centro da área que serve.
+// A colocação só depende do polígono e do nº de BTS: guarda-se o resultado,
+// porque o critério do mapa (calculations/dimension.ts) testa vários números.
+const cache = new WeakMap<LatLng[], Map<number, BTS[]>>();
+
 export function autoPlace(polygon: LatLng[], count: number): BTS[] {
+  let byCount = cache.get(polygon);
+  if (!byCount) cache.set(polygon, (byCount = new Map()));
+  let list = byCount.get(count);
+  if (!list) byCount.set(count, (list = placeSites(polygon, count)));
+  return list.map((b) => ({ ...b }));
+}
+
+function placeSites(polygon: LatLng[], count: number): BTS[] {
   const pts = gridInside(polygon, 50).map((c) => c.p);
   if (!pts.length || count < 1) return [];
   const c = centroid(polygon);

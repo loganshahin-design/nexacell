@@ -11,7 +11,7 @@ import {
 import { defaults, fields } from "@/data/defaults";
 import { DEFAULT_ZONE, calibrate, zones, type ZoneId } from "@/data/zones";
 import { BTS, Mode, Params } from "@/types";
-import { dimension } from "@/calculations/network";
+import { dimensionWithMap } from "@/calculations/dimension";
 import { polygonArea } from "@/calculations/geo";
 import { autoPlace, nextId } from "@/calculations/placement";
 
@@ -104,12 +104,28 @@ function useProjectState() {
   const { params } = state;
   const zone = zones[state.zoneId];
   const zoneArea = useMemo(() => polygonArea(zone.polygon), [zone]);
-  const dim = useMemo(() => dimension(params, zoneArea), [params, zoneArea]);
+  // Capacidade, cobertura pela fórmula e cobertura verificada no mapa (meta).
+  const dim = useMemo(() => dimensionWithMap(params, zone.polygon, zoneArea), [params, zone, zoneArea]);
   const automatic = useMemo(
     () => autoPlace(zone.polygon, dim.required),
     [zone, dim.required],
   );
   const stations = state.stations ?? automatic;
+
+  // Prepara em segundo plano as colocações automáticas de 1 a 24 BTS, para que
+  // mudar a meta (verificação no mapa) não pare a página a calculá-las.
+  useEffect(() => {
+    let n = 1, id = 0;
+    const idle = (cb: () => void) =>
+      typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(cb, { timeout: 1500 }) : globalThis.setTimeout(cb, 50) as unknown as number;
+    const cancel = (h: number) => (typeof window.cancelIdleCallback === "function" ? window.cancelIdleCallback(h) : globalThis.clearTimeout(h));
+    const step = () => {
+      autoPlace(zone.polygon, n++);
+      if (n <= 24) id = idle(step);
+    };
+    id = idle(step);
+    return () => cancel(id);
+  }, [zone]);
 
   const setParam = useCallback(
     <K extends keyof Params>(key: K, value: Params[K]) =>
