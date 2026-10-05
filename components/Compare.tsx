@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useProject } from "@/hooks/useProject";
-import { calibrate, zones, type Zone, type ZoneId } from "@/data/zones";
+import { ZONE_CHOICE, calibrate, zones, type Zone, type ZoneId } from "@/data/zones";
 import { polygonArea } from "@/calculations/geo";
 import { Params } from "@/types";
 import { dimensionWithMap } from "@/calculations/dimension";
@@ -24,7 +24,7 @@ const inZone =
   (id: ZoneId) =>
   (p: Params): Params => ({ ...p, population: calibrate(zones[id].worldpop2020), environment: zones[id].environment });
 
-const presets: Preset[] = [
+const allPresets: Preset[] = [
   {
     key: "ano",
     label: "Hoje e no ano de projecto",
@@ -50,6 +50,8 @@ const presets: Preset[] = [
     b: ["Bobole (rural)", inZone("bobole"), "bobole"],
   },
 ];
+
+const presets = allPresets.filter((x) => ZONE_CHOICE || x.key !== "zonas");
 
 function scenario(p: Params, zone: Zone) {
   const area = polygonArea(zone.polygon);

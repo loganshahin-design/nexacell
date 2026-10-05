@@ -2,7 +2,7 @@
 import dynamic from "next/dynamic";
 import { useProject } from "@/hooks/useProject";
 import { sources } from "@/data/sources";
-import { POP_FACTOR_2020, POP_GROWTH_2025, calibrate, zoneList } from "@/data/zones";
+import { POP_FACTOR_2020, POP_GROWTH_2025, ZONE_CHOICE, calibrate, zoneList } from "@/data/zones";
 import { polygonArea, routeLength } from "@/calculations/geo";
 import { Calc, Callout, OriginBadge, Panel, Stat } from "@/components/ui";
 import Equation, { mathNumber as n } from "@/components/Equation";
@@ -70,7 +70,7 @@ export default function Scenario() {
   const pop2020 = zone.worldpop2020 * POP_FACTOR_2020;
   return (
     <>
-      <ZoneChooser />
+      {ZONE_CHOICE && <ZoneChooser />}
       <div className="grid-2">
         <div className="stack">
           <Panel title="A zona escolhida">

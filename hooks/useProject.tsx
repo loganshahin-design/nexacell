@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { defaults, fields } from "@/data/defaults";
-import { DEFAULT_ZONE, calibrate, zones, type ZoneId } from "@/data/zones";
+import { DEFAULT_ZONE, ZONE_CHOICE, calibrate, zones, type ZoneId } from "@/data/zones";
 import { BTS, Mode, Params } from "@/types";
 import { dimensionWithMap } from "@/calculations/dimension";
 import { polygonArea } from "@/calculations/geo";
@@ -40,6 +40,8 @@ const initial: Stored = {
 function restore(raw: string | null): Stored {
   if (!raw) return initial;
   const data = JSON.parse(raw);
+  // Estado guardado noutra zona com a escolha escondida: começa de novo.
+  if (!ZONE_CHOICE && data?.zoneId && data.zoneId !== DEFAULT_ZONE) return initial;
   const params = { ...defaults };
   for (const key of Object.keys(fields) as (keyof typeof fields)[])
     if (Number.isFinite(data?.params?.[key])) params[key] = data.params[key];

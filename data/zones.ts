@@ -142,3 +142,6 @@ export const zones: Record<ZoneId, Zone> = {
 
 export const zoneList = Object.values(zones);
 export const DEFAULT_ZONE: ZoneId = "michafutene";
+// O projecto é Michafutene: a escolha de zona (Bobole) fica escondida.
+// Pôr a true para voltar a mostrar a escolha e o cenário "Michafutene e Bobole".
+export const ZONE_CHOICE = false;

@@ -81,7 +81,17 @@ test("ecrã de entrada: Entrar abre a aplicação e Sair volta", async ({ page }
   expect(errors).toEqual([]);
 });
 
-test("trocar de zona (Bobole) e repor volta a Michafutene", async ({ page }) => {
+test("a escolha de zona (Bobole) está escondida", async ({ page }) => {
+  await fresh(page);
+  await page.getByRole("button", { name: /Zona e dados/ }).first().click();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByText(/Bobole/)).toHaveCount(0);
+  await page.getByRole("button", { name: /Relatórios/ }).first().click();
+  await expect(page.getByRole("radio", { name: "Michafutene e Bobole" })).toHaveCount(0);
+  await expect(page.getByRole("radio", { name: "1800 MHz e 800 MHz" })).toBeVisible();
+});
+
+test.skip("trocar de zona (Bobole) e repor volta a Michafutene (só com ZONE_CHOICE)", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await fresh(page);
