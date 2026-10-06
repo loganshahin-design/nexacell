@@ -2,8 +2,8 @@
 import dynamic from "next/dynamic";
 import { useProject } from "@/hooks/useProject";
 import { sources } from "@/data/sources";
-import { POP_FACTOR_2020, POP_GROWTH_2025, ZONE_CHOICE, calibrate, zoneList } from "@/data/zones";
-import { polygonArea, routeLength } from "@/calculations/geo";
+import { POP_FACTOR_2020, POP_GROWTH_2025, calibrate } from "@/data/zones";
+import { routeLength } from "@/calculations/geo";
 import { Calc, Callout, OriginBadge, Panel, Stat } from "@/components/ui";
 import Equation, { mathNumber as n } from "@/components/Equation";
 import { fmt } from "@/utils/format";
@@ -29,39 +29,6 @@ const commonKeys = [
   "osmDistrict",
 ];
 
-// Escolha da zona de estudo: Michafutene (o projecto) ou uma zona de comparação.
-function ZoneChooser() {
-  const { zone, setZone } = useProject();
-  return (
-    <Panel title="Zona de estudo">
-      <div className="choice-row" role="radiogroup" aria-label="Zona de estudo">
-        {zoneList.map((z) => {
-          const area = polygonArea(z.polygon);
-          return (
-            <button
-              key={z.id}
-              role="radio"
-              aria-checked={zone.id === z.id}
-              className={`choice ${zone.id === z.id ? "on" : ""}`}
-              onClick={() => zone.id !== z.id && setZone(z.id)}
-            >
-              <strong>{z.short}</strong>
-              <small>
-                {z.kind} · {fmt(area, 1)} km² · {fmt(calibrate(z.worldpop2020))} hab.
-              </small>
-            </button>
-          );
-        })}
-      </div>
-      <p className="field-help">
-        Ao mudar de zona, a população e o ambiente (Hata) passam a ser os da nova
-        zona e as BTS são recolocadas automaticamente. Os outros parâmetros não
-        mudam. "Repor valores de origem" (Relatórios) volta a Michafutene.
-      </p>
-    </Panel>
-  );
-}
-
 export default function Scenario() {
   const { params, zone, zoneArea } = useProject();
   const density = params.population / zoneArea;
@@ -70,7 +37,6 @@ export default function Scenario() {
   const pop2020 = zone.worldpop2020 * POP_FACTOR_2020;
   return (
     <>
-      {ZONE_CHOICE && <ZoneChooser />}
       <div className="grid-2">
         <div className="stack">
           <Panel title="A zona escolhida">

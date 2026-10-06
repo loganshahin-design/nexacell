@@ -24,7 +24,6 @@ import { polygonArea, pointInPolygon, routeLength } from "./geo";
 import { autoPlace } from "./placement";
 import { coverageMap, classify, driveTest } from "./coverage";
 import { dimensionWithMap } from "./dimension";
-import { zones, calibrate } from "../data/zones";
 import { defaults } from "../data/defaults";
 import { zone } from "../data/zone";
 
@@ -170,13 +169,6 @@ test("verificação no mapa: a meta de cobertura entra no nº de BTS", () => {
   const full = dimensionWithMap({ ...defaults, coverageTarget: 100 }, zone.polygon, area);
   assert.equal(full.required, 14);
   assert.equal(full.limiting, "cobertura");
-  // Bobole (rural): a fórmula pede 2, a capacidade 3, o mapa 4.
-  const b = zones.bobole;
-  const rural = dimensionWithMap({ ...defaults, population: calibrate(b.worldpop2020), environment: b.environment }, b.polygon, polygonArea(b.polygon));
-  assert.equal(rural.byCapacity, 3);
-  assert.equal(rural.byMap, 4);
-  assert.equal(rural.required, 4);
-  assert.equal(rural.limiting, "cobertura");
   // Dentro de casa (12 dB): a fórmula pede 30 BTS, acima do limite do mapa, e
   // fica a valer a fórmula (sem o cálculo pesado).
   const t0 = Date.now();

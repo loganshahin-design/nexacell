@@ -49,7 +49,6 @@ const limitations = [
 export default function Report() {
   const { params: p, dim, stations, zone, zoneArea } = useProject();
   const { list, cov, dt } = useConclusions();
-  const main = zone.id === "michafutene";
   const l = dim.link,
     t = dim.traffic;
   const years = projection(p);
@@ -60,7 +59,7 @@ export default function Report() {
       <header className="report-cover">
         <p>Comunicações Móveis</p>
         <h1>Dimensionamento de uma rede móvel 4G LTE em Marracuene</h1>
-        <p>{main ? "Zona de expansão de Michafutene – corredor da N1, Província de Maputo" : `${zone.name}, Província de Maputo (zona de comparação)`}</p>
+        <p>Zona de expansão de Michafutene – corredor da N1, Província de Maputo</p>
         <p>Autores: {team.join(", ")}</p>
         <p>{today}</p>
       </header>
@@ -76,22 +75,11 @@ export default function Report() {
         <p>
           <strong>Cenário.</strong> O 4G já existe em Marracuene desde 2019 e as
           estradas principais estão cobertas (INCM, 2023).{" "}
-          {main ? (
-            <>
-              A zona escolhida, com {fmt(zoneArea, 2)} km² recortados pela fronteira
-              real do distrito, é a mais densa do distrito (≈{" "}
-              {fmt(p.population / zoneArea)} hab./km²) e cresce {fmt(p.growth, 1)} %
-              ao ano. O projecto é de reforço: acompanhar a procura e cobrir também os
-              bairros.
-            </>
-          ) : (
-            <>
-              Esta é uma zona de comparação, rural, com {fmt(zoneArea, 2)} km² dentro
-              da fronteira do distrito e ≈ {fmt(p.population / zoneArea)} hab./km²,
-              ao longo da N1. Serve para ver como o mesmo método decide numa zona
-              pouco densa.
-            </>
-          )}
+          A zona escolhida, com {fmt(zoneArea, 2)} km² recortados pela fronteira
+          real do distrito, é a mais densa do distrito (≈{" "}
+          {fmt(p.population / zoneArea)} hab./km²) e cresce {fmt(p.growth, 1)} % ao
+          ano. O projecto é de reforço: acompanhar a procura e cobrir também os
+          bairros.
         </p>
         <ZoneSketch label="Zona de estudo e N1" />
         <table className="data compact">

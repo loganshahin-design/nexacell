@@ -1,97 +1,90 @@
-# NexaCell — Dimensionamento LTE em Marracuene
+# NexaCell — Dimensionamento de uma rede 4G LTE em Marracuene
 
-Aplicação do projecto de **Comunicações Móveis** (ponto 6, "Projecto de um sistema de CM"). Dimensiona uma rede 4G LTE para a **zona de expansão de Michafutene (corredor da N1), distrito de Marracuene**, com dados reais do INE, do INCM, do WorldPop e do OpenStreetMap.
+Projecto da disciplina de **Comunicações Móveis** (ponto 6, "Projecto de um sistema de CM").
 
-Grupo: Fahima Samsudin, Muhammad Shahin, Saudah Salim.
+**Grupo:** Fahima Samsudin, Muhammad Shahin, Saudah Salim.
+
+## Objectivo
+
+Dimensionar a rede 4G LTE de um operador para a zona de expansão de **Michafutene (corredor da N1), distrito de Marracuene**, para o ano de **2030**, cumprindo a meta do INCM de RSRP ≥ −105 dBm em 95 % da área. A aplicação calcula cada etapa do dimensionamento a partir de dados reais (INE, INCM, WorldPop, OpenStreetMap) e mostra os resultados em mapas, gráficos e num relatório A4.
 
 ## Executar
 
+Requisitos: Node.js 20 ou superior.
+
 ```sh
-npm install
-npm run dev          # http://localhost:3000
-npm test             # testes das fórmulas (11)
-npm run test:e2e     # testes no navegador (precisa do servidor a correr)
-npm run typecheck
+npm install          # instala as dependências e copia o worker do MapLibre para public/maplibre
+npm run dev          # aplicação em http://localhost:3000
+npm test             # testes das fórmulas
+npm run typecheck    # verificação de tipos (TypeScript)
 ```
 
-Em **Relatórios**, "Imprimir / guardar PDF" gera o relatório A4 com os parâmetros, resultados e fontes.
+Testes no navegador (Playwright), com a aplicação a correr:
 
-A aplicação abre num **ecrã de entrada**: a Terra a rodar no espaço, o cartão do projecto com a equipa e o botão **Entrar** (ou a tecla Enter). Ao entrar, a câmara faz um **voo do espaço até Michafutene** (Terra → África Austral → Moçambique → Província de Maputo → Marracuene → Michafutene, ≈ 10 s; "Saltar" ou Esc para ir directo) e mostra a zona, a N1 e as BTS antes de abrir a **Visão geral**, com indicadores, atalhos de planeamento e a cena 3D animada. **Sair** (barra de cima) ou o logótipo do menu voltam ao ecrã de entrada. O menu está organizado em Projecto, Planeamento, Análise e Resultados. Essencial mostra os principais controlos; Detalhado acrescenta parâmetros e fórmulas.
+```sh
+npx playwright install chromium
+npm run test:e2e
+```
 
-O `npm install` copia automaticamente o *worker* do MapLibre para `public/maplibre/` (script `postinstall`). As fontes (Archivo, Source Sans 3, IBM Plex Mono) vêm em pacotes npm e funcionam sem Internet.
+Em **Relatórios**, "Imprimir / guardar PDF" gera o relatório A4 com os parâmetros, os resultados e as fontes. "Repor valores de origem" volta aos valores do projecto.
 
-### Para a apresentação
+## Etapas da aplicação
 
-- **Voo do espaço:** com Internet usa imagens de satélite reais (Esri; se falharem, Sentinel-2 da EOX) num globo MapLibre. Sem Internet passa sozinho para uma Terra 3D offline (imagem da NASA incluída em `public/intro/`). Na Visão geral, "Repetir voo do espaço" mostra-o de novo. **Testem a ligação da sala antes:** com uma rede lenta, deixem o ecrã de entrada aberto uns 15 s antes de carregar em Entrar (as imagens da descida vão sendo carregadas em segundo plano).
-- **Visão geral com voo de abertura:** a câmara desce sobre Michafutene e as torres acendem uma a uma ("Repetir voo" para mostrar de novo).
-- **Apresentar** (na barra de cima): ecrã inteiro, um passo de cada vez; **→ / ←** mudam de passo, **Esc** sai.
-- **Cobertura:** três vistas — *Mapa 2D*, *Sinal em 3D* (a altura das colunas é o sinal) e *Mapa real 3D* (edifícios do OpenStreetMap; precisa de Internet). "Guardar imagem" cria um PNG para o relatório ou os diapositivos.
-- **Percurso:** "Percorrer a N1" anima o carro de medição e o gráfico ao mesmo tempo.
-- **Dimensionamento com três critérios:** capacidade, cobertura pela fórmula da área (`n = área ÷ 1,95·R²`) e **verificação no mapa**: o menor nº de BTS, colocadas automaticamente, com que o mapa atinge a **meta de cobertura**. São precisas as BTS do critério mais exigente. Em Michafutene: capacidade 10, fórmula 7, mapa 9 → 10 BTS. Subir a meta para 100 % passa a pedir 14.
-- **Relatórios → Comparar cenários:** hoje contra 2030, 1800 contra 800 MHz, exterior contra dentro de casa, e **Michafutene contra Bobole**.
-- **Escolher a zona (Zona e dados):** além de Michafutene (o projecto), há **Bobole**, uma zona rural de comparação no norte de Marracuene, ao longo da N1 (46,6 km², ≈ 11 823 hab., ambiente rural no Hata). Ao trocar, a população, o ambiente e as BTS mudam e tudo é recalculado; "Repor valores de origem" volta a Michafutene. Em Bobole o raio é de 3,86 km; a capacidade pede 3 BTS e a fórmula da área 2, mas o mapa mostra que são precisas 4 para cumprir a meta (97,9 %). Em Michafutene decide a capacidade; em Bobole decide a cobertura. Dados de Bobole: OpenStreetMap e WorldPop, consultados a 05/10/2026.
-
-Todas as animações respeitam a opção "reduzir movimento" do sistema operativo.
-
----
-
-## Guia do grupo
-
-### A ideia em 30 segundos
-
-Marracuene **já tem 4G** desde 2019, e o INCM mediu em 2023 que as estradas principais estão cobertas (98,9 % a 100 % das amostras com RSRP ≥ −105 dBm). O problema é outro: o distrito cresce 3,7 % ao ano e cada pessoa consome cada vez mais dados. Escolhemos a parte mais densa do distrito, Michafutene junto à N1 (13 km², ≈ 41 mil habitantes, ≈ 3 150 hab./km²), e dimensionámos a rede LTE de um operador para **2030**.
-
-**Resultado com os valores de origem:** são precisas **10 BTS**. A **capacidade** é o critério que limita: só para cobrir a zona bastariam 7. O raio de cada célula é de 1,04 km.
-
-> ⚠️ Não digam que "Marracuene não tem 3G/4G". É falso, e o próprio INCM tem medições que o desmentem.
-
-### O que cada passo faz
-
-| Passo | O que calcula | Como explicar numa frase |
+| Etapa | Ponto | O que calcula |
 |---|---|---|
-| **6 Cenário** | Zona, população, dados reais | "Escolhemos a zona mais densa e que mais cresce; todos os dados reais têm fonte." |
-| **6.1.1 Tráfego** | Habitantes → utilizadores 4G → Mbit/s na hora de pico → BTS por capacidade | "Em 2030 a zona precisa de 608 Mbit/s na hora de pico; cada BTS dá 67 Mbit/s úteis, logo 10 BTS." |
-| **6.1.2 Área de serviço** | Orçamento de enlace → perda máxima (MAPL) → modelo Hata → raio → BTS por cobertura | "O sinal pode perder até 124,9 dB; pelo modelo Hata isso acontece a 1,04 km; com esse raio bastam 7 BTS para cobrir a zona." |
-| **6.1.3 Reuso** | D/R = √(3N), C/I, capacidade para N = 1, 3, 4, 7 | "O LTE usa N = 1: perde C/I mas usa a banda toda; com N = 7 seriam precisas 64 BTS." |
-| **6.1.4 Localização** | Coloca as BTS dentro da zona (algoritmo de Lloyd) | "As BTS ficam distribuídas de forma uniforme, a cerca de 1,6 km umas das outras." |
-| **6.1.5 Cobertura** | Mapa de RSRP ponto a ponto (Hata + diagrama da antena) | "97,8 % da área cumpre o critério; a meta do INCM é 95 %." |
-| **6.1.6 Teste de campo** | Drive test **previsto** ao longo da N1 e comparação com o INCM | "O modelo prevê 100 % das amostras acima de −105 dBm, a mesma ordem do que o INCM mediu (98,9–100 %)." |
-| **6.2 Antenas** | Tipos, vantagens e aplicações; λ, PIRE, ganho, tilt óptimo, diagramas | "Usamos painéis sectoriais de 65° e 18 dBi; o tilt óptimo é de 5,1°." |
-| **Resumo** | Decisão, conclusões e relatório | — |
+| Zona e dados | 6 | Zona de estudo, população (WorldPop calibrado ao INE) e dados reais com fonte |
+| Tráfego | 6.1.1 | Utilizadores 4G, tráfego na hora de pico e BTS pela capacidade |
+| Dimensionamento | 6.1.2 | Orçamento de ligação, perda máxima (MAPL), modelo COST-231 Hata, raio da célula e BTS pela cobertura |
+| Frequências | 6.1.3 | Reutilização de frequências (N = 1, 3, 4, 7), D/R e C/I |
+| Estações | 6.1.4 | Localização das BTS na zona (algoritmo de Lloyd) |
+| Cobertura | 6.1.5 | Mapa de RSRP ponto a ponto, classes do INCM e critério de projecto |
+| Percurso | 6.1.6 | Teste de percurso previsto ao longo da N1 e comparação com as medições do INCM |
+| Antenas | 6.2 | Tipos de antena, vantagens e aplicações; λ, PIRE, ganho, diagramas e escolha do tilt |
+| Relatórios | — | Decisão, comparação de cenários, conclusões e relatório A4 |
 
-### Etiquetas de origem
+Cada parâmetro tem uma etiqueta de origem: **Real** (com fonte), **Pressuposto** (valor típico, justificado) ou **Calculado**. O modo **Detalhado** mostra os parâmetros avançados e as fórmulas com os valores substituídos.
 
-- **Real**: tem fonte (clique na etiqueta). Exemplos: população (INE/WorldPop), penetração 65 % (INCM), limiar −105 dBm e meta de 95 % (INCM), consumo de 5,3 GB/mês (Ericsson).
-- **Pressuposto**: uma escolha nossa, justificada. Exemplos: quota do operador 50 %, 60 % dos clientes com 4G, 46 dBm, 18 dBi.
-- **Calculado**: sai das fórmulas.
+## Principais resultados
 
-### Perguntas que a docente pode fazer
-
-- **Porquê o modelo Hata e não o espaço livre?** O espaço livre ignora edifícios e o solo. Daria um raio de 23 km, o que é irrealista. O Hata (COST-231 acima de 1500 MHz) é empírico e foi feito para redes móveis.
-- **Porque é que o RSRP usa a potência "por subportadora"?** O RSRP mede uma única subportadora de 15 kHz. 46 dBm repartidos por 1200 subportadoras (20 MHz) dão 15,2 dBm.
-- **O que é a margem de sombreamento?** O sinal varia por causa dos obstáculos (σ = 8 dB). Para o sinal ficar acima do limiar em 85 % dos pontos da orla, que corresponde a cerca de 95 % da área, somamos 8,3 dB.
-- **E dentro das casas?** Com 12 dB de perdas nas paredes seriam precisas 30 BTS a 1800 MHz. Por isso recomendamos uma camada em 800/900 MHz.
-- **Porquê 10 e não 7 BTS?** Sete BTS cobrem a zona, mas não têm capacidade para o tráfego de 2030. Em 2025 bastariam 4.
-
-### Limitações (dizer abertamente)
-
-- O modelo Hata não usa o relevo nem os edifícios reais, e abaixo de 1 km é uma extrapolação.
-- A população está distribuída uniformemente dentro da zona.
-- As BTS existentes não entram no modelo, porque as suas posições não são públicas.
-- **O teste de campo é uma previsão, não uma medição.**
-
----
+| Indicador | Valor |
+|---|---|
+| Procura na hora de pico (2030) | 608 Mbit/s |
+| BTS pela capacidade / pela fórmula da área / pelo mapa | 10 / 7 / 9 |
+| **BTS necessárias** | **10** (decide a capacidade) |
+| Raio da célula | 1,04 km (MAPL 124,9 dB, Hata suburbano) |
+| Área com RSRP ≥ −93,7 dBm (critério de projecto) | 97,8 % |
+| Área com RSRP ≥ −105 dBm (critério do INCM) | 100 % |
+| Antenas | Painel sectorial MIMO 2×2, 65° × 7°, 18 dBi, 3 por BTS, a 30 m, tilt 4° |
+| PIRE por sector | 62 dBm |
 
 ## Estrutura do código
 
-- `calculations/` — funções puras e testadas: `network.ts` (tráfego, Erlang B, capacidade, orçamento de enlace, dimensionamento), `propagation.ts` (Okumura/COST-231 Hata, FSPL, RSRP por RE), `antenna.ts` (diagrama 3GPP, tilt, PIRE), `coverage.ts` (mapa RSRP e drive test), `reuse.ts`, `placement.ts`, `geo.ts`.
-- `data/` — `zone.ts` (polígono e rota reais do OSM), `sources.ts` (registo de fontes), `defaults.ts` (valores de origem e descrição de cada parâmetro), `steps.ts`.
-- `components/steps/` — um ficheiro por passo; `components/shell/` — menu, barra superior e navegação; `components/Report.tsx` — relatório A4.
-- `components/motion/` — animações (Motion): número que conta, transição entre passos, funil, cascata do enlace.
-- `components/three/Zone3D.tsx` — cena 3D (React Three Fiber); `components/map/RealMap3D.tsx` — mapa real 3D (MapLibre + OpenFreeMap); `components/Compare.tsx` — comparador de cenários.
-- `components/intro/` — ecrã de entrada e voo do espaço: `Welcome.tsx` (cartão de entrada), `SpaceIntro.tsx` (fases, HUD, chegada), `GlobeMap.tsx` (globo de satélite MapLibre), `OfflineGlobe.tsx` (Terra 3D offline), `Starfield.tsx`; etapas e fontes de imagem em `data/intro.ts`; estilos em `app/intro.css`.
-- `hooks/useProject.tsx` — estado único, guardado no navegador (`localStorage`, chave `nexacell-v2`). O ecrã de entrada não se guarda: cada visita começa nele.
+- `calculations/` — funções de cálculo, sem interface: `network.ts` (tráfego, Erlang B, capacidade, orçamento de ligação), `propagation.ts` (COST-231 Hata, espaço livre, RSRP por elemento de recurso), `antenna.ts` (diagrama 3GPP, tilt, PIRE), `coverage.ts` (mapa de RSRP e teste de percurso), `dimension.ts` (número de BTS pelos três critérios), `reuse.ts`, `placement.ts`, `geo.ts`. Testes em `network.test.ts`.
+- `data/` — `zones.ts` (polígono e N1 reais do OpenStreetMap), `sources.ts` (registo das fontes), `defaults.ts` (valores do projecto e descrição de cada parâmetro), `steps.ts`, `intro.ts`.
+- `components/steps/` — um componente por etapa; `components/shell/` — menu e barra superior; `components/Report.tsx` — relatório A4; `components/Compare.tsx` — comparação de cenários.
+- `components/intro/` — ecrã de entrada e animação de aproximação a Michafutene; `components/three/` e `components/map/` — vistas 3D.
+- `hooks/useProject.tsx` — estado da aplicação, guardado no navegador (`localStorage`).
+- `tests/` — testes no navegador (Playwright).
 
-Imagens do voo do espaço: Esri World Imagery (Esri, Maxar, Earthstar Geographics); Sentinel-2 cloudless da EOX IT Services (contém dados Copernicus Sentinel modificados, 2020); NASA Visible Earth, Blue Marble (domínio público).
+## Fontes de dados
 
-Referências técnicas: COST 231 Final Report (1999); Hata (1980); 3GPP TR 36.814 e TS 36.211; Holma & Toskala, *LTE for UMTS* (2011); ITU-R P.525.
+- **INE** — população do distrito de Marracuene (2020 e 2025) e taxa de crescimento.
+- **INCM** — penetração móvel, quotas dos operadores, classes de RSRP e medições de 4G em Marracuene (2023).
+- **WorldPop** — distribuição da população (2020, grelha de 100 m).
+- **OpenStreetMap** — fronteira do distrito, localidade de Michafutene e traçado da N1.
+- **Ericsson Mobility Report** — consumo de dados por utilizador e crescimento.
+
+Cada valor, com ligação e data de consulta, está em `data/sources.ts` e no relatório.
+
+Imagens da animação de entrada: Esri World Imagery (Esri, Maxar, Earthstar Geographics); Sentinel-2 cloudless da EOX IT Services (contém dados Copernicus Sentinel modificados, 2020); NASA Visible Earth, Blue Marble (domínio público).
+
+## Limitações
+
+- O modelo de Hata não usa o relevo nem os edifícios reais e, abaixo de 1 km, é uma extrapolação.
+- A população é considerada uniforme dentro da zona.
+- As BTS existentes dos operadores não entram no modelo, porque as suas posições não são públicas.
+- O teste de percurso é uma previsão do modelo, não uma medição no terreno.
+
+## Referências
+
+COST 231 Final Report (1999); M. Hata, "Empirical formula for propagation loss in land mobile radio services" (1980); 3GPP TR 36.814 e TS 36.211; H. Holma e A. Toskala, *LTE for UMTS* (2011); ITU-R P.525.

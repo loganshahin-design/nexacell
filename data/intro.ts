@@ -17,12 +17,6 @@ export const waypoints = [
   { above: 0, name: "Michafutene", note: "Corredor da N1 · a nossa zona" },
 ] as const;
 
-// As mesmas etapas, com a última a ser a zona escolhida.
-export function waypointsFor(z: Zone): readonly { above: number; name: string; note: string }[] {
-  const last = z.id === "michafutene" ? waypoints[waypoints.length - 1] : { above: 0, name: z.short, note: "N1 rural · zona de comparação" };
-  return [...waypoints.slice(0, -1), last];
-}
-
 export function waypointIndex(altitudeKm: number, list: readonly { above: number }[] = waypoints) {
   const i = list.findIndex((w) => altitudeKm >= w.above);
   return i === -1 ? list.length - 1 : i;

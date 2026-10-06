@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { SkipForward } from "lucide-react";
 import { useProject } from "@/hooks/useProject";
-import { formatAltitude, formatLatLng, targetOf, waypointIndex, waypointsFor } from "@/data/intro";
+import { formatAltitude, formatLatLng, targetOf, waypointIndex, waypoints } from "@/data/intro";
 import { routeLength } from "@/calculations/geo";
 import { fmt } from "@/utils/format";
 import Starfield from "./Starfield";
@@ -30,7 +30,6 @@ export default function SpaceIntro({
 }) {
   const { stations, params, dim, zone, zoneArea } = useProject();
   const target = targetOf(zone);
-  const waypoints = waypointsFor(zone);
   const reduce = !!useReducedMotion();
   const [engine, setEngine] = useState<Engine | null>(null);
   const [phase, setPhase] = useState<Phase>("orbit");

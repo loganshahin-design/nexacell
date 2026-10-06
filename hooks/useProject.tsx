@@ -9,17 +9,15 @@ import {
   useState,
 } from "react";
 import { defaults, fields } from "@/data/defaults";
-import { DEFAULT_ZONE, ZONE_CHOICE, calibrate, zones, type ZoneId } from "@/data/zones";
+import { DEFAULT_ZONE, zones } from "@/data/zones";
 import { BTS, Mode, Params } from "@/types";
 import { dimensionWithMap } from "@/calculations/dimension";
 import { polygonArea } from "@/calculations/geo";
 import { autoPlace, nextId } from "@/calculations/placement";
 
-const STORAGE_KEY = "nexacell-v2";
+const STORAGE_KEY = "nexacell-v3";
 
 type Stored = {
-  // Zona de estudo activa (Michafutene por omissão).
-  zoneId: ZoneId;
   params: Params;
   // null = colocação automática com o nº de BTS dimensionado.
   stations: BTS[] | null;
@@ -29,7 +27,6 @@ type Stored = {
 };
 
 const initial: Stored = {
-  zoneId: DEFAULT_ZONE,
   params: defaults,
   stations: null,
   mode: "basico",
@@ -40,8 +37,6 @@ const initial: Stored = {
 function restore(raw: string | null): Stored {
   if (!raw) return initial;
   const data = JSON.parse(raw);
-  // Estado guardado noutra zona com a escolha escondida: começa de novo.
-  if (!ZONE_CHOICE && data?.zoneId && data.zoneId !== DEFAULT_ZONE) return initial;
   const params = { ...defaults };
   for (const key of Object.keys(fields) as (keyof typeof fields)[])
     if (Number.isFinite(data?.params?.[key])) params[key] = data.params[key];
@@ -54,7 +49,6 @@ function restore(raw: string | null): Stored {
     Number.isFinite(b.azimuth) &&
     typeof b.enabled === "boolean";
   return {
-    zoneId: data?.zoneId in zones ? data.zoneId : DEFAULT_ZONE,
     params,
     stations:
       Array.isArray(data?.stations) && data.stations.every(valid)
@@ -104,7 +98,7 @@ function useProjectState() {
   }, [state, loaded]);
 
   const { params } = state;
-  const zone = zones[state.zoneId];
+  const zone = zones[DEFAULT_ZONE];
   const zoneArea = useMemo(() => polygonArea(zone.polygon), [zone]);
   // Capacidade, cobertura pela fórmula e cobertura verificada no mapa (meta).
   const dim = useMemo(() => dimensionWithMap(params, zone.polygon, zoneArea), [params, zone, zoneArea]);
@@ -153,14 +147,6 @@ function useProjectState() {
     setSpaceTour,
     zone,
     zoneArea,
-    // Muda de zona: população e ambiente da nova zona, BTS recolocadas.
-    setZone: (id: ZoneId) =>
-      setState((s) => ({
-        ...s,
-        zoneId: id,
-        params: { ...s.params, population: calibrate(zones[id].worldpop2020), environment: zones[id].environment },
-        stations: null,
-      })),
     dim,
     stations,
     isAutomatic: state.stations === null,

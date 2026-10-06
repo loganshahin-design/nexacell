@@ -1,5 +1,4 @@
-// A zona do projecto (Michafutene) e o tipo LatLng. As zonas disponíveis estão
-// em data/zones.ts; a zona activa vem de useProject().zone.
+// A zona do projecto (Michafutene) e o tipo LatLng, definidos em data/zones.ts.
 import { zones } from "./zones";
 
 export type { LatLng } from "./zones";

@@ -81,40 +81,6 @@ test("ecrã de entrada: Entrar abre a aplicação e Sair volta", async ({ page }
   expect(errors).toEqual([]);
 });
 
-test("a escolha de zona (Bobole) está escondida", async ({ page }) => {
-  await fresh(page);
-  await page.getByRole("button", { name: /Zona e dados/ }).first().click();
-  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.getByText(/Bobole/)).toHaveCount(0);
-  await page.getByRole("button", { name: /Relatórios/ }).first().click();
-  await expect(page.getByRole("radio", { name: "Michafutene e Bobole" })).toHaveCount(0);
-  await expect(page.getByRole("radio", { name: "1800 MHz e 800 MHz" })).toBeVisible();
-});
-
-test.skip("trocar de zona (Bobole) e repor volta a Michafutene (só com ZONE_CHOICE)", async ({ page }) => {
-  const errors: string[] = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  await fresh(page);
-  const sidebar = page.locator(".decision");
-  await expect(sidebar.locator("strong")).toHaveText("10 BTS");
-  await page.getByRole("button", { name: /Zona e dados/ }).first().click();
-  await page.getByRole("radio", { name: /Bobole/ }).click();
-  await expect(page.getByText("Bobole – N1 rural (norte de Marracuene)")).toBeVisible();
-  // Zona rural: raio maior e menos BTS.
-  await expect(sidebar).toContainText("Raio 3,86 km");
-  await expect(sidebar.locator("strong")).not.toHaveText("10 BTS");
-  await page.getByRole("button", { name: /Cobertura/ }).first().click();
-  await expect(page.getByRole("heading", { level: 1, name: "Cobertura da rede" })).toBeVisible();
-  await page.getByRole("button", { name: /Relatórios/ }).first().click();
-  await page.getByRole("radio", { name: "Michafutene e Bobole" }).click();
-  await expect(page.getByRole("columnheader", { name: "Bobole (rural)" })).toBeVisible();
-  await page.getByRole("button", { name: /Repor valores de origem/ }).click();
-  await page.getByRole("button", { name: /Confirmar/ }).click();
-  await expect(sidebar.locator("strong")).toHaveText("10 BTS");
-  await expect(sidebar).toContainText("Raio 1,04 km");
-  expect(errors).toEqual([]);
-});
-
 test("antenas: a explicação do tilt percorre os passos sem mudar o projecto", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
