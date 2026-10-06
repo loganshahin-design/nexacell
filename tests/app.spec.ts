@@ -129,6 +129,12 @@ test("antenas: a explicação do tilt percorre os passos sem mudar o projecto", 
   await expect(page.getByText("Tilt pela fórmula (ponto de partida)")).toHaveCount(0);
   await page.getByRole("radio", { name: "Detalhado" }).click();
   await expect(page.getByText("Tilt actual: 4°")).toBeVisible();
+  // Tilt alterado: o painel avisa e repõe os 4°.
+  await expect(ex.getByText(/O tilt do projecto está em/)).toHaveCount(0);
+  await page.getByLabel("Inclinação (tilt)").fill("5");
+  await expect(ex.getByText("O tilt do projecto está em 5°, não em 4°")).toBeVisible();
+  await ex.getByRole("button", { name: "Repor 4°" }).click();
+  await expect(ex.getByText(/O tilt do projecto está em/)).toHaveCount(0);
   await expect(page.locator(".decision")).toContainText("10 BTS");
   expect(errors).toEqual([]);
 });

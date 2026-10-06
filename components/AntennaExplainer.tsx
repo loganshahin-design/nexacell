@@ -6,7 +6,8 @@ import { useProject } from "@/hooks/useProject";
 import { elevation, verticalLoss } from "@/calculations/antenna";
 import { classify, coverageMap } from "@/calculations/coverage";
 import { hata, powerPerRe, resourceBlocks } from "@/calculations/propagation";
-import { Panel } from "@/components/ui";
+import { Callout, Panel } from "@/components/ui";
+import { defaults } from "@/data/defaults";
 import { fmt } from "@/utils/format";
 
 // Explicação animada da antena vista de lado: o feixe, o tilt e porque usamos 4°.
@@ -50,7 +51,7 @@ function useTween(target: number, ms = 900) {
 }
 
 export default function AntennaExplainer() {
-  const { params: p, stations, zone, dim } = useProject();
+  const { params: p, stations, zone, dim, setParam } = useProject();
   const R = dim.link.radius;
   const h = p.height,
     hm = p.mobileHeight,
@@ -160,6 +161,15 @@ export default function AntennaExplainer() {
 
   return (
     <Panel title={`Porque é que a antena está inclinada ${fmt(p.tilt)}°?`} className="explainer">
+      {p.tilt !== defaults.tilt && (
+        <Callout tone="warn" title={`O tilt do projecto está em ${fmt(p.tilt, 1)}°, não em ${fmt(defaults.tilt)}°`}>
+          Foi alterado nos parâmetros (ou com o botão do tilt pela fórmula). O valor do
+          projecto é {fmt(defaults.tilt)}°.{" "}
+          <button type="button" className="btn small primary" onClick={() => setParam("tilt", defaults.tilt)}>
+            Repor {fmt(defaults.tilt)}°
+          </button>
+        </Callout>
+      )}
       <ol className="explainer-steps" aria-label="Passos da explicação">
         {steps.map((x, i) => (
           <li key={x.title}>
