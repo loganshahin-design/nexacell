@@ -4,6 +4,7 @@ import { useProject } from "@/hooks/useProject";
 import { antennaParameters, horizontalLoss } from "@/calculations/antenna";
 import { Calc, Callout, Fields, Hero, Panel, Rows } from "@/components/ui";
 import Equation, { mathNumber as n } from "@/components/Equation";
+import AntennaExplainer from "@/components/AntennaExplainer";
 import { fmt } from "@/utils/format";
 
 const types = [
@@ -119,6 +120,8 @@ export default function Antennas() {
           o tilt eléctrico limita a interferência entre células vizinhas (frequências).
         </Callout>
       </Panel>
+
+      <AntennaExplainer />
 
       <h2 className="section-title">Cálculos de parâmetros das antenas</h2>
       <div className="grid-2">
