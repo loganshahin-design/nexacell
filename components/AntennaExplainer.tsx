@@ -1,5 +1,5 @@
 "use client";
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { Pause, Play } from "lucide-react";
 import { useProject } from "@/hooks/useProject";
@@ -55,54 +55,35 @@ export default function AntennaExplainer() {
   const h = p.height,
     hm = p.mobileHeight,
     v = p.vBeam;
-  const edge = elevation(h, hm, R);
-  const optimal = edge + v / 2;
 
   const steps: Step[] = [
     {
-      title: "A torre",
+      title: "A orla",
       tilt: null,
-      text: `As antenas estão no topo de uma torre de ${fmt(h)} m; o telemóvel está a ${fmt(hm, 1)} m do chão. Cada célula vai até ${fmt(R, 2)} km (a orla). A seguir começa a célula da BTS vizinha. A altura está exagerada no desenho, para se ver.`,
-    },
-    {
-      title: "O feixe",
-      tilt: 0,
-      text: `A antena não espalha o sinal para todo o lado: concentra-o num feixe, como uma lanterna. Visto de lado o feixe tem ${fmt(v)}° de altura; visto de cima tem ${fmt(p.hBeam)}° de largura, e há ${p.sectors} antenas por torre, uma por fatia de 120°. Concentrar o sinal é o que dá o ganho de ${fmt(p.gain)} dBi.`,
+      text: `Cada torre serve uma zona à volta dela: a célula. A orla é a fronteira dessa zona, o ponto mais longe que a torre tem de servir: ${fmt(R, 2)} km. Depois da orla começa a zona da torre vizinha. A antena está a ${fmt(h)} m de altura (no desenho a altura está exagerada, para se ver).`,
     },
     {
       title: "Sem inclinação (0°)",
       tilt: 0,
-      text: "Com a antena direita, metade do feixe vai para o céu e o resto segue para longe: o sinal chega forte à célula vizinha, que usa a mesma frequência. Isso é interferência. E junto à torre o sinal fica mais fraco, porque o feixe passa por cima das casas.",
+      text: "A antena manda o sinal num feixe, como uma lanterna. Se ficar direita, o feixe vai longe demais: passa a orla e chega forte à zona da torre vizinha. Como as duas usam a mesma frequência, atrapalham-se: é a interferência. E perto da torre o feixe passa por cima das casas.",
     },
     {
       title: "Inclinação a mais (10°)",
       tilt: 10,
-      text: "Se inclinarmos demais, o feixe bate no chão perto da torre. A vizinha fica protegida, mas a orla da nossa célula fica com pouco sinal e grande parte da zona deixa de cumprir.",
+      text: "Se a inclinarmos demais, o feixe bate no chão perto da torre. A vizinha fica protegida, mas a orla da nossa célula fica sem sinal suficiente (vermelho) e grande parte da zona deixa de cumprir.",
     },
     {
-      title: `A fórmula: ponto de partida (${fmt(optimal, 1)}°)`,
-      tilt: optimal,
-      text: `A regra clássica: a borda de cima do feixe deve acabar exactamente na orla. O ângulo da antena até à orla é arctan(${fmt(h - hm, 1)} m ÷ ${fmt(R * 1000, 0)} m) = ${fmt(edge, 1)}°. Soma-se metade do feixe, ${fmt(v)}° ÷ 2 = ${fmt(v / 2, 1)}°. Total: ${fmt(optimal, 1)}°. É um bom ponto de partida, mas a fórmula olha para uma antena sozinha: não sabe que há outras torres a ajudar nem qual é a forma da zona.`,
-    },
-    {
-      title: `Afinado no mapa (${fmt(p.tilt)}°)`,
+      title: `Os nossos ${fmt(p.tilt)}°`,
       tilt: p.tilt,
-      text: `Por isso, partindo da fórmula, testámos no mapa vários tilts com as 10 BTS juntas (gráfico ao lado). Com a fórmula a cobertura fica quase no limite da meta. Inclinando 1° a menos, para ${fmt(p.tilt)}°, a cobertura sobe para cerca de 98 %, e o sinal que vai para a vizinha só aumenta cerca de 2 dB. Inclinar ainda menos já mandaria demasiado sinal para a vizinha. É assim que se faz na prática: a fórmula dá o ponto de partida e o mapa afina.`,
-    },
-    {
-      title: "Experimenta",
-      tilt: p.tilt,
-      text: "Mexe no tilt e vê o feixe, o sinal no chão e a cobertura da zona a mudar. Isto não altera o projecto.",
+      text: `O certo está no meio: o feixe deve chegar até à orla e parar aí. Testámos no mapa vários ângulos, com as 10 torres (gráfico ao lado). Com ${fmt(p.tilt)}° a zona fica bem coberta, acima da meta de ${fmt(p.coverageTarget)} %, e pouco sinal passa para a vizinha. Por isso usamos ${fmt(p.tilt)}°.`,
     },
   ];
 
   const [step, setStep] = useState(0);
-  const [free, setFree] = useState(p.tilt);
   const [playing, setPlaying] = useState(false);
   const s = steps[step];
   const last = step === steps.length - 1;
-  const target = last ? free : (s.tilt ?? 0);
-  const tilt = useTween(target);
+  const tilt = useTween(s.tilt ?? 0);
 
   useEffect(() => {
     if (!playing) return;
@@ -140,8 +121,7 @@ export default function AntennaExplainer() {
     t = window.setTimeout(next, 300);
     return () => clearTimeout(t);
   }, [cache]);
-  const deferredFree = useDeferredValue(free);
-  const shownTilt = last ? deferredFree : (s.tilt ?? p.tilt);
+  const shownTilt = s.tilt ?? p.tilt;
   const coverage = coverageAt(shownTilt);
 
   // Geometria do desenho.
@@ -168,8 +148,7 @@ export default function AntennaExplainer() {
   }, [tilt, p]);
 
   const showBeam = s.tilt !== null;
-  const near = rsrp(0.2, shownTilt),
-    atEdge = rsrp(R, shownTilt),
+  const atEdge = rsrp(R, shownTilt),
     atNeighbour = rsrp(2 * R, shownTilt);
   const houses = [0.25, 0.42, 0.6, 0.78, 0.95, 1.2, 1.38, 1.62, 1.85, 2.25];
 
@@ -180,7 +159,7 @@ export default function AntennaExplainer() {
     cy = (c: number) => 14 + ((100 - c) / 60) * (CH - 44);
 
   return (
-    <Panel title="A antena explicada: o feixe e o tilt" className="explainer">
+    <Panel title={`Porque é que a antena está inclinada ${fmt(p.tilt)}°?`} className="explainer">
       <ol className="explainer-steps" aria-label="Passos da explicação">
         {steps.map((x, i) => (
           <li key={x.title}>
@@ -228,14 +207,6 @@ export default function AntennaExplainer() {
             </g>
           )}
 
-          {step === 4 && (
-            <g className="ex-construct">
-              <line x1={ax} y1={ay} x2={sx(R)} y2={GROUND - hm * M} stroke="var(--laterite)" strokeWidth={2} strokeDasharray="6 4" />
-              <text x={sx(R * 0.55)} y={ay + 48} className="ex-label lat">{fmt(edge, 1)}° até à orla</text>
-              <text x={ax + 30} y={ay + 76} className="ex-label lat">+ {fmt(v / 2, 1)}° (metade do feixe)</text>
-              <text x={ax + 30} y={ay + 100} className="ex-label lat strong">= {fmt(optimal, 1)}°</text>
-            </g>
-          )}
 
           {/* Torre, antena, BTS vizinha */}
           <g className="ex-tower">
@@ -260,33 +231,13 @@ export default function AntennaExplainer() {
           ))}
           <text x={X0 - 8} y={GROUND + 18} textAnchor="end" className="ex-label muted">sinal</text>
           <text x={W - 8} y={GROUND + 50} textAnchor="end" className="ex-label muted">{fmt(MAX_KM, 1)} km</text>
-          {showBeam && step !== 1 && (
+          {showBeam && (
             <text x={W - 10} y={ay - 6} textAnchor="end" className="ex-tilt">
               tilt {fmt(tilt, 1)}°
             </text>
           )}
         </svg>
 
-        {step === 1 && (
-          <svg className="ex-top" viewBox="-60 -60 120 120" role="img" aria-label="Vista de cima: três sectores de 65 graus">
-            <circle r={52} fill="var(--surface)" stroke="var(--line)" />
-            {Array.from({ length: p.sectors }, (_, k) => {
-              const a0 = ((k * 360) / p.sectors - p.hBeam / 2 - 90) * (Math.PI / 180),
-                a1 = ((k * 360) / p.sectors + p.hBeam / 2 - 90) * (Math.PI / 180);
-              return (
-                <path
-                  key={k}
-                  d={`M0,0 L${44 * Math.cos(a0)},${44 * Math.sin(a0)} A44,44 0 0 1 ${44 * Math.cos(a1)},${44 * Math.sin(a1)} Z`}
-                  fill={["#2563eb", "#f59e0b", "#10b981"][k % 3]}
-                  fillOpacity={0.35}
-                  stroke={["#2563eb", "#f59e0b", "#10b981"][k % 3]}
-                />
-              );
-            })}
-            <circle r={4} fill="var(--text)" />
-            <text y={-54} textAnchor="middle" fontSize="11" fill="var(--muted)">vista de cima</text>
-          </svg>
-        )}
       </div>
 
       <div className="explainer-body">
@@ -295,12 +246,6 @@ export default function AntennaExplainer() {
             {step + 1}. {s.title}
           </h3>
           <p>{s.text}</p>
-          {last && (
-            <label className="explainer-slider">
-              <span>Tilt: {fmt(free, 1)}°</span>
-              <input type="range" min={0} max={12} step={0.5} value={free} onChange={(e) => setFree(+e.target.value)} />
-            </label>
-          )}
           <div className="explainer-nav">
             <button type="button" className="btn" disabled={step === 0} onClick={() => { setPlaying(false); setStep(step - 1); }}>
               ◀ Anterior
@@ -317,12 +262,11 @@ export default function AntennaExplainer() {
         {showBeam && (
           <div className="explainer-side">
             <dl className="explainer-read">
-              <div><dt>Junto à torre (200 m)</dt><dd>{fmt(near, 1)} dBm</dd></div>
               <div><dt>Na orla ({fmt(R, 2)} km)</dt><dd>{fmt(atEdge, 1)} dBm</dd></div>
               <div><dt>Na BTS vizinha</dt><dd>{fmt(atNeighbour, 1)} dBm <small>(menos é melhor)</small></dd></div>
               <div><dt>Cobertura da zona (mapa)</dt><dd className={coverage >= p.coverageTarget ? "ok" : "bad"}>{fmt(coverage, 1)} %</dd></div>
             </dl>
-            {step >= 5 && (
+            {last && (
               <svg className="explainer-curve" viewBox={`0 0 ${CW} ${CH}`} role="img" aria-label="Cobertura da zona para cada tilt">
                 {[100, 80, 60, 40].map((c) => (
                   <g key={c}>
@@ -341,8 +285,6 @@ export default function AntennaExplainer() {
                 {curve.map((c, i) => (
                   <circle key={i} cx={cx(curveTilts[i])} cy={cy(Math.max(c, 40))} r={2.5} fill="var(--accent)" />
                 ))}
-                <line x1={cx(optimal)} x2={cx(optimal)} y1={10} y2={CH - 30} stroke="var(--laterite)" strokeDasharray="3 3" />
-                <text x={cx(optimal) + 3} y={CH - 34} fontSize="10" fill="var(--laterite)">fórmula</text>
                 <circle cx={cx(Math.min(shownTilt, 10))} cy={cy(Math.max(coverage, 40))} r={6} fill="none" stroke="var(--text)" strokeWidth={2} />
                 {[0, 2, 4, 6, 8, 10].map((t) => (
                   <text key={t} x={cx(t)} y={CH - 12} textAnchor="middle" fontSize="10" fill="var(--muted)">{t}°</text>

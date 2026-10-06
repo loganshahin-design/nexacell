@@ -115,19 +115,19 @@ test.skip("trocar de zona (Bobole) e repor volta a Michafutene (só com ZONE_CHO
   expect(errors).toEqual([]);
 });
 
-test("antenas: a explicação animada do tilt percorre os passos sem mudar o projecto", async ({ page }) => {
+test("antenas: a explicação do tilt percorre os passos sem mudar o projecto", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await fresh(page);
   await page.getByRole("button", { name: /Antenas/ }).first().click();
   const ex = page.locator(".explainer");
-  await expect(ex.getByRole("heading", { name: "1. A torre" })).toBeVisible();
-  for (let i = 0; i < 6; i++) await ex.getByRole("button", { name: /Seguinte/ }).click();
-  await expect(ex.getByRole("heading", { name: "7. Experimenta" })).toBeVisible();
-  await ex.getByRole("slider").fill("10");
-  await expect(ex).toContainText("Tilt: 10°");
-  await expect(ex).toContainText("48 %");
-  // O tilt do projecto continua 4°.
+  await expect(ex.getByRole("heading", { name: "1. A orla" })).toBeVisible();
+  for (let i = 0; i < 3; i++) await ex.getByRole("button", { name: /Seguinte/ }).click();
+  await expect(ex.getByRole("heading", { name: "4. Os nossos 4°" })).toBeVisible();
+  await expect(ex).toContainText("97,8 %");
+  // No modo Essencial não aparece a conta do tilt; no Detalhado sim.
+  await expect(page.getByText("Tilt pela fórmula (ponto de partida)")).toHaveCount(0);
+  await page.getByRole("radio", { name: "Detalhado" }).click();
   await expect(page.getByText("Tilt actual: 4°")).toBeVisible();
   await expect(page.locator(".decision")).toContainText("10 BTS");
   expect(errors).toEqual([]);

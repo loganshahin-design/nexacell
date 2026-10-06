@@ -86,7 +86,8 @@ function VerticalDiagram({
 }
 
 export default function Antennas() {
-  const { params: p, dim, setParam } = useProject();
+  const { params: p, dim, setParam, mode } = useProject();
+  const detail = mode === "avancado";
   const a = antennaParameters(p, dim.link.radius);
   const optimal = Math.round(a.optimalTilt * 2) / 2;
   return (
@@ -129,13 +130,13 @@ export default function Antennas() {
           <Panel title="Parâmetros">
             <Fields names={["gain", "hBeam", "vBeam", "tilt", "height", "power"]} />
           </Panel>
-          <Hero label="Tilt pela fórmula (ponto de partida)" value={a.optimalTilt} digits={1} unit="°">
+          {detail && <Hero label="Tilt pela fórmula (ponto de partida)" value={a.optimalTilt} digits={1} unit="°">
             Regra geométrica: aponta o limite superior do feixe (−3 dB) à orla da
             célula, a {fmt(dim.link.radius, 2)} km, para uma antena sozinha. Depois
             afina-se no mapa, com as 10 BTS juntas (ver &quot;A antena explicada&quot;).
             Tilt actual: {fmt(p.tilt, 1)}°.
-          </Hero>
-          {Math.abs(p.tilt - optimal) >= 0.5 && (
+          </Hero>}
+          {detail && Math.abs(p.tilt - optimal) >= 0.5 && (
             <button className="btn primary" onClick={() => setParam("tilt", optimal)}>
               Usar o tilt da fórmula ({fmt(optimal, 1)}°)
             </button>
@@ -146,13 +147,18 @@ export default function Antennas() {
             <Rows
               rows={[
                 ["Comprimento de onda λ", `${fmt(a.lambda * 100, 2)} cm`],
-                ["Dipolo de meia onda λ/2", `${fmt(a.dipole * 100, 2)} cm`],
+                ...(detail ? [["Dipolo de meia onda λ/2", `${fmt(a.dipole * 100, 2)} cm`] as [string, string]] : []),
                 ["Potência por sector", `${fmt(p.power)} dBm = ${fmt(a.powerW, 1)} W`],
                 ["PIRE (potência isotrópica radiada equivalente)", `${fmt(a.eirp, 1)} dBm = ${fmt(a.eirpW)} W`],
-                ["Ganho estimado pelas aberturas", `${fmt(a.beamGain, 1)} dBi (declarado: ${fmt(p.gain)} dBi)`],
-                ["Ângulo até à orla da célula", `${fmt(a.edgeAngle, 2)}°`],
-                ["Feixe toca o solo (centro)", Number.isFinite(a.mainReach) ? `${fmt(a.mainReach, 2)} km` : "não toca (tilt 0°)"],
-                ["Zona do feixe principal (−3 dB)", `${fmt(a.innerReach, 2)} a ${Number.isFinite(a.outerReach) ? `${fmt(a.outerReach, 2)} km` : "horizonte"}`],
+                ...(detail
+                  ? ([
+                      ["Ganho estimado pelas aberturas", `${fmt(a.beamGain, 1)} dBi (declarado: ${fmt(p.gain)} dBi)`],
+                      ["Tilt pela fórmula (ponto de partida)", `${fmt(a.optimalTilt, 1)}°`],
+                      ["Ângulo até à orla da célula", `${fmt(a.edgeAngle, 2)}°`],
+                      ["Feixe toca o solo (centro)", Number.isFinite(a.mainReach) ? `${fmt(a.mainReach, 2)} km` : "não toca (tilt 0°)"],
+                      ["Zona do feixe principal (−3 dB)", `${fmt(a.innerReach, 2)} a ${Number.isFinite(a.outerReach) ? `${fmt(a.outerReach, 2)} km` : "horizonte"}`],
+                    ] as [string, string][])
+                  : []),
               ]}
             />
           </Panel>
