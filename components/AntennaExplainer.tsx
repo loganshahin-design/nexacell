@@ -80,14 +80,14 @@ export default function AntennaExplainer() {
       text: "Se inclinarmos demais, o feixe bate no chão perto da torre. A vizinha fica protegida, mas a orla da nossa célula fica com pouco sinal e grande parte da zona deixa de cumprir.",
     },
     {
-      title: `O tilt da fórmula (${fmt(optimal, 1)}°)`,
+      title: `A fórmula: ponto de partida (${fmt(optimal, 1)}°)`,
       tilt: optimal,
-      text: `A regra clássica: a borda de cima do feixe deve acabar exactamente na orla. O ângulo da antena até à orla é arctan(${fmt(h - hm, 1)} m ÷ ${fmt(R * 1000, 0)} m) = ${fmt(edge, 1)}°. Soma-se metade do feixe, ${fmt(v)}° ÷ 2 = ${fmt(v / 2, 1)}°. Total: ${fmt(optimal, 1)}°. Assim o feixe forte fica todo dentro da nossa célula.`,
+      text: `A regra clássica: a borda de cima do feixe deve acabar exactamente na orla. O ângulo da antena até à orla é arctan(${fmt(h - hm, 1)} m ÷ ${fmt(R * 1000, 0)} m) = ${fmt(edge, 1)}°. Soma-se metade do feixe, ${fmt(v)}° ÷ 2 = ${fmt(v / 2, 1)}°. Total: ${fmt(optimal, 1)}°. É um bom ponto de partida, mas a fórmula olha para uma antena sozinha: não sabe que há outras torres a ajudar nem qual é a forma da zona.`,
     },
     {
-      title: `O que usamos (${fmt(p.tilt)}°)`,
+      title: `Afinado no mapa (${fmt(p.tilt)}°)`,
       tilt: p.tilt,
-      text: `Testámos no mapa vários tilts (gráfico ao lado). Menos inclinação dá mais cobertura até um ponto, mas manda mais sinal para a vizinha. Na fórmula a cobertura fica perto do limite da meta. Escolhemos ${fmt(p.tilt)}°: boa folga acima dos ${fmt(p.coverageTarget)} % e só cerca de 1° abaixo da fórmula, por isso a interferência continua controlada.`,
+      text: `Por isso, partindo da fórmula, testámos no mapa vários tilts com as 10 BTS juntas (gráfico ao lado). Com a fórmula a cobertura fica quase no limite da meta. Subindo a antena 1°, para ${fmt(p.tilt)}°, a cobertura sobe para cerca de 98 %, e o sinal que vai para a vizinha só aumenta cerca de 2 dB. Subir mais já mandaria demasiado sinal para a vizinha. É assim que se faz na prática: a fórmula dá o ponto de partida e o mapa afina.`,
     },
     {
       title: "Experimenta",

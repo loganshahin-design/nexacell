@@ -33,7 +33,7 @@ export function useConclusions() {
       ? `Para garantir o mesmo sinal dentro das casas (12 dB de paredes), seriam precisas ${indoor.byCoverage} BTS a ${fmt(p.frequency)} MHz. Recomenda-se uma camada em banda baixa (800/900 MHz) para a cobertura interior.`
       : `O projecto já inclui ${fmt(p.indoorLoss)} dB de perda de penetração (utilizadores dentro de casa).`,
     `O LTE funciona com reuso N = ${p.reuse}; um cluster N = 7 dividiria a banda por 7 e multiplicaria o número de BTS pela capacidade.`,
-    `Antenas: painéis sectoriais MIMO de ${fmt(p.hBeam)}° e ${fmt(p.gain)} dBi, a ${fmt(p.height)} m, com tilt de ${fmt(p.tilt, 1)}° (óptimo calculado: ${fmt(antennaParameters(p, dim.link.radius).optimalTilt, 1)}°).`,
+    `Antenas: painéis sectoriais MIMO de ${fmt(p.hBeam)}° e ${fmt(p.gain)} dBi, a ${fmt(p.height)} m, com tilt de ${fmt(p.tilt, 1)}° (a fórmula geométrica dá ${fmt(antennaParameters(p, dim.link.radius).optimalTilt, 1)}° como ponto de partida; o valor foi afinado no mapa).`,
   ];
   return { list, cov, dt };
 }
@@ -228,7 +228,7 @@ export default function Report() {
             <tr><td>Comprimento de onda / dipolo λ/2</td><td>{fmt(a.lambda * 100, 2)} cm / {fmt(a.dipole * 100, 2)} cm</td></tr>
             <tr><td>PIRE</td><td>{fmt(a.eirp, 1)} dBm ({fmt(a.eirpW)} W)</td></tr>
             <tr><td>Ganho pelas aberturas {fmt(p.hBeam)}° × {fmt(p.vBeam, 1)}°</td><td>{fmt(a.beamGain, 1)} dBi (declarado {fmt(p.gain)} dBi)</td></tr>
-            <tr><td>Tilt óptimo / usado</td><td>{fmt(a.optimalTilt, 1)}° / {fmt(p.tilt, 1)}°</td></tr>
+            <tr><td>Tilt pela fórmula / usado (afinado no mapa)</td><td>{fmt(a.optimalTilt, 1)}° / {fmt(p.tilt, 1)}°</td></tr>
             <tr><td>Feixe principal no solo</td><td>{fmt(a.innerReach, 2)} km a {Number.isFinite(a.outerReach) ? `${fmt(a.outerReach, 2)} km` : "horizonte"}</td></tr>
           </tbody>
         </table>

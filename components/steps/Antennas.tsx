@@ -129,13 +129,15 @@ export default function Antennas() {
           <Panel title="Parâmetros">
             <Fields names={["gain", "hBeam", "vBeam", "tilt", "height", "power"]} />
           </Panel>
-          <Hero label="Tilt óptimo" value={a.optimalTilt} digits={1} unit="°">
-            Aponta o limite superior do feixe (−3 dB) à orla da célula, a{" "}
-            {fmt(dim.link.radius, 2)} km. Tilt actual: {fmt(p.tilt, 1)}°.
+          <Hero label="Tilt pela fórmula (ponto de partida)" value={a.optimalTilt} digits={1} unit="°">
+            Regra geométrica: aponta o limite superior do feixe (−3 dB) à orla da
+            célula, a {fmt(dim.link.radius, 2)} km, para uma antena sozinha. Depois
+            afina-se no mapa, com as 10 BTS juntas (ver &quot;A antena explicada&quot;).
+            Tilt actual: {fmt(p.tilt, 1)}°.
           </Hero>
           {Math.abs(p.tilt - optimal) >= 0.5 && (
             <button className="btn primary" onClick={() => setParam("tilt", optimal)}>
-              Aplicar tilt de {fmt(optimal, 1)}°
+              Usar o tilt da fórmula ({fmt(optimal, 1)}°)
             </button>
           )}
         </div>
