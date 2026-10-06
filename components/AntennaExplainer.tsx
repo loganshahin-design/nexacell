@@ -87,7 +87,7 @@ export default function AntennaExplainer() {
     {
       title: `Afinado no mapa (${fmt(p.tilt)}°)`,
       tilt: p.tilt,
-      text: `Por isso, partindo da fórmula, testámos no mapa vários tilts com as 10 BTS juntas (gráfico ao lado). Com a fórmula a cobertura fica quase no limite da meta. Subindo a antena 1°, para ${fmt(p.tilt)}°, a cobertura sobe para cerca de 98 %, e o sinal que vai para a vizinha só aumenta cerca de 2 dB. Subir mais já mandaria demasiado sinal para a vizinha. É assim que se faz na prática: a fórmula dá o ponto de partida e o mapa afina.`,
+      text: `Por isso, partindo da fórmula, testámos no mapa vários tilts com as 10 BTS juntas (gráfico ao lado). Com a fórmula a cobertura fica quase no limite da meta. Inclinando 1° a menos, para ${fmt(p.tilt)}°, a cobertura sobe para cerca de 98 %, e o sinal que vai para a vizinha só aumenta cerca de 2 dB. Inclinar ainda menos já mandaria demasiado sinal para a vizinha. É assim que se faz na prática: a fórmula dá o ponto de partida e o mapa afina.`,
     },
     {
       title: "Experimenta",
